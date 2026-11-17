@@ -465,20 +465,6 @@
           <small data-i18n="opt_35b_d"></small>
         </span>
       </label>
-      <label class="opt">
-        <input type="radio" name="env" value="esp32s3_hsu">
-        <span>
-          <b data-i18n="opt_35_n"></b>
-          <small data-i18n="opt_35_d"></small>
-        </span>
-      </label>
-      <label class="opt">
-        <input type="radio" name="env" value="jc3248w535_hsu">
-        <span>
-          <b>JC3248W535 / JC3248W535C</b>
-          <small><a href="https://github.com/djomaster/TigerScale-v3-TigerPOD-3.5B/blob/main/docs/JC3248W535.md" data-i18n="jc_wiring"></a></small>
-        </span>
-      </label>
     </div>
 
     <details class="wiring" id="waveshare-wiring">
@@ -738,7 +724,6 @@
   document.querySelectorAll('input[name=env]').forEach(r => {
     r.addEventListener('change', () => {
       installer.manifest = `manifest-${r.value}.json`;
-      document.getElementById('waveshare-wiring').hidden = r.value === 'jc3248w535_hsu';
     });
   });
 
