@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# pre-commit — the guards, before the commit rather than after the push.
+#
+# Runs `verify.sh --quick`: the table of contents, the CODEMAP anchors, the i18n
+# table, the emoji and mojibake checks, and the release-notes check. No compiling
+# — a build takes half a minute and would make committing feel expensive enough
+# that people reach for --no-verify, which defeats the point.
+#
+# The compile still happens: `verify.sh` (reference env) before you finish, and
+# `verify.sh --all` (five envs) before you push. This hook only guarantees that
+# the mechanical, regenerable things are never the reason a push goes red.
+#
+# Installed by scripts/install-hooks.sh, which points core.hooksPath here so a
+# fresh clone gets it with one command.
+
+set -uo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+# Nothing of ours staged? Nothing to guard.
+if ! git diff --cached --name-only | grep -qE '\.(ino|h|md|json|py|sh|ini|csv)$'; then
+  exit 0
+fi
+
+# Fingerprint the regenerable files first. --quick rewrites the table of
+# contents in place, and the only thing we care about is whether *it* changed
+# them — not whether they happened to be dirty already. Comparing against the
+# index instead would reject every partial commit, which is how the first
+# version of this hook blocked a commit that had nothing wrong with it.
+REGEN="TigerTagSplashESP32/TigerTagSplashESP32.ino CODEMAP.md"
+before=$(md5 -q $REGEN 2>/dev/null || md5sum $REGEN 2>/dev/null)
+
+if ! out=$(bash scripts/verify.sh --quick 2>&1); then
+  echo "$out"
+  echo
+  echo "pre-commit: guards failed — fix them rather than passing --no-verify."
+  echo "  most drift is regenerable:  bash scripts/verify.sh --fix"
+  exit 1
+fi
+
+after=$(md5 -q $REGEN 2>/dev/null || md5sum $REGEN 2>/dev/null)
+if [ "$before" != "$after" ]; then
+  echo "pre-commit: the guards regenerated the table of contents or CODEMAP."
+  echo "Stage that regeneration and retry:"
+  echo "  git add $REGEN"
+  exit 1
+fi
+
+echo "pre-commit: guards passed."

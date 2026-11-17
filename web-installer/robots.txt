@@ -1,0 +1,5 @@
+# The installer and the release manifest are meant to be found.
+User-agent: *
+Allow: /
+
+Sitemap: https://djomaster.github.io/TigerScale-v3-TigerPOD-3.5B/sitemap.xml

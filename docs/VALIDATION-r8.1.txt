@@ -1,0 +1,26 @@
+v3.13 fork custom 3.5B — POD r8.1 — 14 novembre 2026
+
+Aucune compilation PlatformIO/ESP32, aucun flash, aucune écriture Firebase réelle.
+Tests natifs ciblés exécutés sur la r8.1 :
+- inventaire, lecteurs et poids : 3733 assertions ;
+- coordinateur NFC/inventaire : 37 ;
+- liens UID partagés : 24 ;
+- zéro et dérive : 81 ;
+- découverte asynchrone et stabilité : 62.
+Total : 3937 assertions réussies.
+
+La découverte rend la main avant la réponse simulée. Tests : requête lente,
+pertes RF de 2 à 5 s sans nouvelle recherche, perte prolongée, reprise du cache,
+retrait pendant requête, changement d'UID ou de compte, erreur et reprise réseau,
+absence d'envoi autorisé sans lecture fraîche, proposition unique pour inconnu.
+Les anciennes 9510 assertions de la r8 sont historiques et n'ont pas toutes été
+réexécutées : voir VALIDATION-r8.txt. Les tests ci-dessus ciblent ce correctif.
+
+Contrôles du dépôt --fix --quick : réussis. Différence du fichier principal limitée
+à l'identité de version, son affichage, le traitement réseau de la reconnaissance
+et la table des matières régénérée. Acquisition, tare, étalonnage, filtres et
+calculs de poids inchangés. Protocole NFC et format des journaux inchangés.
+La r8 a été vérifiée inchangée contre son manifeste sauvegardé.
+
+Restent à effectuer par l'utilisateur : compilation esp32s3_hsu_b, test écran et
+pesée réels, réseau lent/coupé et changements de bobine, suivant CORRECTIF-r8.1.md.

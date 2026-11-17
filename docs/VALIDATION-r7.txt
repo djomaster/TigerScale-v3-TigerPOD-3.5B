@@ -1,0 +1,62 @@
+VALIDATION ET PROVENANCE — TigerScale 3.5B r7
+12 novembre 2026
+
+Identite : V3Plus-3.11.0-3.5B-RFID-3.13-POD-INVENTORY-r7
+Base : r6 custom locale, conservee sans modification (250 fichiers controles).
+Base originale utilisateur : 241 fichiers controles, aucun modifie.
+Aucun commit Git invente : la revision livree est identifiee par son manifeste SHA-256.
+
+SHA256 .ino original utilisateur :
+0c93b8487016cbf312d96c8ba520789d44dd7d22aeb71654abc0c0844c40ced6
+SHA256 .ino r6 :
+1068202f737e309743fc26222ec734034d6ccb654083f6e28de9782633bbae17
+SHA256 .ino r7 :
+d939f097667971ef7f087ae806609b7bfe6db2e3f25d98a8f04da9ae43df6eae
+
+Tests natifs passes (9088 controles au total) :
+- Inventaire, lecteurs et poids : 3496
+- Selecteur sur LVGL natif, 1000 bobines : 2677
+- Zero et derive : 81
+- Alimentation custom : 29 ; restriction carte : 5
+- Port RFID 3.13 : 44
+- Moteur NFC reel, peripheriques simules : 2618
+- Transport GET_VERSION : 30
+- Planificateur cloud r7 reel, HTTP/stockage simules : 71
+- Coordinateur r7 + moteur NFC + planificateur, peripheriques simules : 37
+
+Cas r7 couverts : association, reencodage, formatage, restauration, retour apres
+une ecriture partielle, absence de confirmation physique, autre UID, refus cloud,
+reponse de commit perdue, absence de reecriture sur reprise, compte different,
+version d'inventaire changee, UID deja associe, corruption de journal, echec de
+sauvegarde et conservation du poids recent. Les preconditions du commit atomique
+sont appliquees par le faux serveur de test ; aucun serveur reel n'a ete contacte.
+
+Controles statiques du depot : scripts/verify.sh --fix --quick, tous passes.
+L'avertissement pragma once in main file de deux harnais natifs est lie a leur
+inclusion du moteur dans un fichier C++ temporaire ; aucun echec de test.
+
+NON EFFECTUE : compilation ESP32 / PlatformIO, flash, verification tactile de
+l'ecran r7 reel, ecriture de vrais tags, validation des droits Firebase du compte,
+synchronisation dans Studio reel, mesure de vitesse, coupure electrique materielle.
+La compatibilite de la compilation finale et le comportement reel restent donc
+a confirmer. Aucun binaire r7 n'est livre.
+
+Dependances des tests natifs : ArduinoJson et LVGL de l'installation r6 existante,
+utilises en lecture seule via ARDUINOJSON_INCLUDE et LVGL_SOURCE. Aucun build
+PlatformIO n'a ete lance pour installer des dependances.
+
+Reproduction apres installation des dependances :
+  python3 scripts/test-inventory.py
+  python3 scripts/test-picker.py
+  python3 scripts/test-zero.py
+  python3 scripts/test-custom-power.py
+  python3 scripts/test-rfid-313.py
+  python3 scripts/test-pod.py
+  python3 scripts/test-pod-transport.py
+  python3 scripts/test-pod-cloud.py
+  python3 scripts/test-pod-inventory.py
+  bash scripts/verify.sh --quick
+
+Avec des dependances deja presentes ailleurs, definir ARDUINOJSON_INCLUDE vers
+ArduinoJson/src et LVGL_SOURCE vers le dossier lvgl. Ces variables ne changent
+pas la configuration PlatformIO du firmware.

@@ -1,0 +1,5 @@
+Correctif r7.1 : 3733 controles inventaire/lecteurs/pesee et 2618 controles du moteur NFC passes.
+237 nouvelles assertions couvrent les en-tetes vierges TLV et Init sur les trois capacites, et les residus dans le bloc Init.
+Controles statiques verify.sh --fix --quick : tous passes.
+Aucune compilation ESP32, aucun flash, aucun test materiel de r7.1 effectue ici.
+VALIDATION-r7.txt conserve le rapport historique de la base r7.

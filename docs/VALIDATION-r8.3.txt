@@ -1,0 +1,20 @@
+v3.13 fork custom 3.5B / r8.3 — 14 novembre 2026
+Sources uniquement. Aucun build ESP32, flash ou essai matériel/cloud réel.
+Tests natifs ciblés réussis :
+- coordination inventaire/NFC et aperçu rapide : 54 assertions ;
+- découverte asynchrone : 67 ;
+- moteur NFC et pannes simulées : 2621 ;
+- liens partagés et batchGet : 40 ;
+- LVGL réel : limites des 6 écrans et confirmation physique simulée : 87.
+Total : 2869 assertions. Les rapports antérieurs inclus sont historiques.
+
+Aperçu : exactement 6 READ pour deux NTAG216, zéro écriture et zéro requête
+réseau supplémentaire lorsque la recherche récente est réutilisable.
+Une mémoire étendue non vide peut passer l'aperçu mais bloque ensuite le
+contrôle complet, avant toute écriture. Un seul tag ou deux UID identiques
+n'autorisent pas l'encodage. Les résultats expirés ou d'un autre compte/génération
+ne sont pas réutilisés. Acquisition/calcul du poids et moteur d'écriture inchangés.
+
+Contrôles --fix --quick : voir GUARDS-r8.3.txt. Sources r8.2 conservées.
+Restent à valider : compilation 3.5B, temps réellement inférieur à une seconde,
+RF, réseau, affichage physique et pesée. Suivre CORRECTIF-r8.3.md.

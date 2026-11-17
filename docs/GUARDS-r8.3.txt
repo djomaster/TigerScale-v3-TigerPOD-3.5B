@@ -1,0 +1,44 @@
+
+==> Regenerating the table of contents
+    ok
+
+==> Regenerating CODEMAP line numbers
+CODEMAP.md is already in sync.
+
+==> Table of contents is current
+    ok
+
+==> CODEMAP anchors
+    CODEMAP check PASSED (80 anchors, max drift 0).
+
+==> i18n — firmware table and web locales
+    i18n check PASSED.
+
+==> Every word on the panel comes from the translation table
+    checked 169 LVGL text setter call site(s), 0 violation(s)
+
+==> UI fonts cover every string
+    UI font check PASSED.
+
+==> Generated files agree with their own declarations
+    checked 3 bitmap header(s) and 6 font face(s) against their own declarations, 0 disagreement(s)
+
+==> Documented device names match the firmware's
+    scanned 41 documents against 'tigerscale-%02X%02X', 0 violation(s)
+
+==> llms.txt still describes this repository
+    checked llms.txt against platformio.ini, CLAUDE.md and the firmware, 0 disagreement(s)
+
+==> No emoji in documentation
+    emoji check PASSED (73 files).
+
+==> File format — line endings, BOM, invisible characters
+    file format check PASSED (LF, no BOM, no invisible controls).
+
+==> No mojibake in code or data
+    mojibake check PASSED.
+
+==> Release notes for the current version
+    ok (docs/release-notes/v3.13.0.md)
+
+All checks passed.

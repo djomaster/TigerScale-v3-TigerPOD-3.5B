@@ -1,0 +1,40 @@
+TigerScale 3.5B / POD INVENTORY r8 — validation du 13 novembre 2026
+
+Livraison de SOURCES. Aucune compilation ESP32/PlatformIO ni aucun flash.
+Aucun test physique NFC, pesée, écran tactile ou coupure électrique exécuté ici.
+Aucune écriture dans le compte Firebase réel ; connecteur utilisé en lecture seule.
+
+Tests natifs réussis (code réel, périphériques/réseau simulés sauf rendu LVGL réel) :
+- Inventaire, lecteurs, poids : 3733 assertions
+- Sélecteur LVGL réel, 1000 bobines : 2677
+- Zéro et dérive : 81
+- Alimentation custom : 29 ; restriction carte 3.5B : 5
+- Port RFID 3.13 : 44
+- Moteur NFC/journal, injections de panne : 2621
+- Transport GET_VERSION : 30
+- Planificateur cloud/restauration, faux HTTP et stockage : 101
+- Coordination NFC/inventaire : 37
+- Liens UID partagés, conflits et réponse perdue : 24
+- Trames ACK HSU, délai, débordement de millis : 29
+- Découverte, retrait du tag inconnu, compte/hors-ligne : 12
+- Rendu LVGL réel et confirmation physique simulée : 87
+TOTAL : 9510 assertions.
+
+Les 6 écrans POD ont été rendus à 480x320 et contrôlés pour débordement.
+Accueil compatible, identifiant et outils inspectés visuellement.
+Le test tactile exige relâchement puis maintien 2 s ; le matériel reste à tester.
+Contrôles du dépôt : scripts/verify.sh --fix --quick, tous réussis.
+Les gardes multilingues historiques ne couvrent pas encore les nouvelles chaînes
+françaises du module POD ; celles-ci sont documentées comme limitées au français.
+
+Provenance : base custom V3Plus 3.11.0 + port RFID 3.13, carte 3.5B exclusivement.
+SHA256 de l'INO custom original :
+0c93b8487016cbf312d96c8ba520789d44dd7d22aeb71654abc0c0844c40ced6
+Original : 241 empreintes vérifiées inchangées.
+r6 : 237 empreintes du manifeste sources-r6 vérifiées inchangées.
+Sources et archive r7.1 : les 247 fichiers du manifeste sauvegardé sont identiques.
+Travail réalisé uniquement dans la copie r8 ; aucune modification des livraisons
+r6/r7/r7.1, aucun commit, tag ou push.
+
+Mesure restante : vitesse réelle d'encodage et droits Firebase de création des
+rfidAliases depuis la balance. Lire POD-INVENTORY-r8.md avant essai.

@@ -1,0 +1,233 @@
+name: release
+
+# Publish a version:
+#
+#     git tag v2.3.0 && git push origin v2.3.0
+#
+# There is exactly ONE source of truth for the version — TIGERSCALE_FW_VERSION in
+# §2 of the firmware — and exactly ONE published manifest. This workflow refuses to
+# publish if the tag disagrees with the macro, and it generates the manifest rather
+# than letting anyone hand-edit it. That is what keeps over-the-air updates and the
+# web installer offering the same build: they read the same generated file, so they
+# cannot drift apart by anyone forgetting a step.
+#
+# What gets published:
+#
+#   - firmware.bin and firmware.factory.bin for the supported -3.5B board
+#   - bootloader.bin, partitions.bin and boot_app0.bin, which the browser
+#     installer needs to write a blank board (the OTA never touches them)
+#   - littlefs.bin — the web UI. Built once: it comes from data/ and is identical
+#     for the -3.5B.
+#   - SHA256SUMS.txt
+#   - version.json on GitHub Pages, which the device polls
+#
+# Prerequisite, once: repository Settings -> Pages -> Source = "GitHub Actions".
+#
+# `workflow_dispatch` runs everything except the publish steps, so the manifest and
+# the builds can be inspected without cutting a release.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  # Granted for the deploy job below, which calls pages.yml. A called workflow
+  # cannot hold permissions the caller does not have.
+  pages: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  # The build whose binary fills the FLAT OTA keys of version.json. Every scale
+  # in the field is an ESP32-S3-Touch-LCD-3.5B and reads exactly those keys, so
+  # this must stay the -3.5B build forever; make-manifest.py refuses to generate
+  # a manifest if it is anything else. The -3.5 is served from boards["3.5"].
+  OTA_ENV: esp32s3_hsu_b
+  # Published to users, in the order the installer offers them.
+  PUBLISHED_ENVS: "esp32s3_hsu_b"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      publish: ${{ steps.version.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio/.cache
+            ~/.platformio/packages
+            ~/.platformio/platforms
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+          restore-keys: pio-${{ runner.os }}-
+
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+
+      - name: The tag must match TIGERSCALE_FW_VERSION
+        id: version
+        run: |
+          FW=$(grep -oE '#define TIGERSCALE_FW_VERSION[[:space:]]+"[^"]+"' \
+                 TigerTagSplashESP32/TigerTagSplashESP32.ino \
+               | grep -oE '"[^"]+"' | tr -d '"')
+          if [ -z "$FW" ]; then
+            echo "::error::Could not read TIGERSCALE_FW_VERSION from the firmware."
+            exit 1
+          fi
+          echo "firmware version: $FW"
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF_NAME#v}"
+            echo "tag:              $TAG"
+            if [ "$FW" != "$TAG" ]; then
+              echo "::error::Tag v$TAG does not match TIGERSCALE_FW_VERSION ($FW). Bump the macro in §2 and re-tag, or tag v$FW."
+              exit 1
+            fi
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Dry run — building and generating the manifest, publishing nothing."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$FW" >> "$GITHUB_OUTPUT"
+
+      - name: Guards must pass before anything is published
+        # Every guard, through the one command, deliberately: this step used to
+        # name three scripts and went on naming three while the suite grew to
+        # eleven, so a release could be published having checked a third of what
+        # a bench check covers. A list of guards in a workflow is a list that
+        # goes stale, exactly like the one that was in llms.txt.
+        run: bash scripts/verify.sh --quick
+
+      - name: Release notes must exist
+        if: steps.version.outputs.publish == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          NOTES="docs/release-notes/v$VERSION.md"
+          if [ ! -f "$NOTES" ]; then
+            echo "::error::$NOTES is missing. Every published version explains itself."
+            echo "Create it with:  bash scripts/bump-version.sh $VERSION"
+            exit 1
+          fi
+          # A scaffold that nobody filled in is worse than no notes: it looks
+          # deliberate. Refuse the template's own placeholder text.
+          if grep -q "One or two sentences a user would care about" "$NOTES"; then
+            echo "::error::$NOTES still contains the template placeholder — write the notes."
+            exit 1
+          fi
+          echo "Release notes:"; sed 's/^/  /' "$NOTES"
+
+      - name: Build the web UI filesystem
+        run: |
+          # The web filesystem is built from data/ for the supported -3.5B.
+          pio run -e "$OTA_ENV" -t buildfs
+
+      - name: Build every published board
+        run: |
+          for e in $PUBLISHED_ENVS; do
+            echo "::group::$e"
+            pio run -e "$e"
+            echo "::endgroup::"
+          done
+
+      - name: Collect the release assets
+        run: |
+          mkdir -p dist
+          for e in $PUBLISHED_ENVS; do
+            cp ".pio/build/$e/firmware.bin"         "dist/firmware-$e.bin"
+            cp ".pio/build/$e/firmware.factory.bin" "dist/firmware-$e.factory.bin"
+            # The bootloader and the partition table are published too. They are
+            # not part of any OTA — only the browser installer writes them — but
+            # they used to live nowhere except the deployed site, which made the
+            # site the only source for them. A site cannot carry a file no release
+            # ever deployed, so the first release after an env rename could not be
+            # assembled at all. Publishing them breaks that circle.
+            cp ".pio/build/$e/bootloader.bin"       "dist/bootloader-$e.bin"
+            cp ".pio/build/$e/partitions.bin"       "dist/partitions-$e.bin"
+          done
+          cp ".pio/build/$OTA_ENV/littlefs.bin" dist/littlefs.bin
+          cp "$(find ~/.platformio/packages/framework-arduinoespressif32/tools/partitions -name boot_app0.bin | head -1)" \
+             dist/boot_app0.bin
+          ( cd dist && sha256sum ./* > SHA256SUMS.txt )
+          ls -la dist/
+          cat dist/SHA256SUMS.txt
+
+      - name: Assemble the GitHub Pages site
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          # The web installer and the images it flashes must be same-origin: a
+          # browser flashing over Web Serial fetches each part by relative path, and
+          # cross-origin release assets would need CORS headers we do not control.
+          mkdir -p pages/firmware
+          cp -R web-installer/. pages/
+
+          for e in $PUBLISHED_ENVS; do
+            cp ".pio/build/$e/firmware.bin"    "pages/firmware/firmware-$e.bin"
+            cp ".pio/build/$e/bootloader.bin"  "pages/firmware/bootloader-$e.bin"
+            cp ".pio/build/$e/partitions.bin"  "pages/firmware/partitions-$e.bin"
+          done
+          # Include boot_app0 and the filesystem for the -3.5B installer.
+          cp "$(find ~/.platformio/packages/framework-arduinoespressif32/tools/partitions -name boot_app0.bin | head -1)" \
+             pages/firmware/boot_app0.bin
+          cp dist/littlefs.bin pages/firmware/littlefs.bin
+
+          python3 scripts/make-manifest.py \
+            --version "$VERSION" \
+            --repo "$REPO" \
+            --ota-env "$OTA_ENV" \
+            --dist dist \
+            --web-installer pages \
+            --out pages/version.json
+
+          echo "--- pages/ ---"; find pages -type f | sort
+          cat pages/version.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish the GitHub Release
+        if: steps.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Guaranteed to exist — the "Release notes must exist" gate ran first.
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "TigerScale V3+ v$VERSION" \
+            --notes-file "docs/release-notes/v$VERSION.md"
+
+  # Publishing the page is NOT done here. pages.yml is the single thing in this
+  # repository allowed to deploy Pages, and this job calls it once the release
+  # exists, so the site is assembled around assets that are already downloadable.
+  #
+  # It used to be a job here, and that was the bug: two workflows deploying for
+  # the same commit minutes apart. GitHub reported both successful, marked the
+  # older inactive, and went on serving it. version.json advertised the previous
+  # version, so every scale kept reporting "up to date" against a release that
+  # was already out. Nothing was red anywhere.
+
+  deploy-page:
+    needs: build
+    if: needs.build.outputs.publish == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml

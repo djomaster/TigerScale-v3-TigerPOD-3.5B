@@ -1,0 +1,22 @@
+v3.13 fork custom 3.5B / r8.2 — 14 novembre 2026
+Sources uniquement. Aucune compilation ESP32 ni aucun flash.
+Aucun accès en écriture à Firebase réel, aucun essai sur les tags physiques.
+
+Tests natifs réussis : inventaire/lecteurs/poids 3733, coordinateur 37,
+liens partagés et batchGet 40, découverte/stabilité/délais 67, plan cloud 101,
+port RFID 3.13 44, zéro/dérive 81. Total : 4103 assertions.
+
+Couverture nouvelle : une requête batch pour une paire directement associée,
+trois pour des identifiants supplémentaires ; réponses inversées, noms dupliqués,
+UID identiques dédupliqués dans la requête, document absent, réponse partielle,
+JSON invalide et panne du batch avec repli sûr. Aucun commit supplémentaire.
+Délais de stabilisation testés aux bornes 149/150 et 499/500 ms.
+
+Contrôles du dépôt --fix --quick : réussis (voir GUARDS-r8.2.txt).
+Sources r8.1 vérifiées identiques au manifeste sauvegardé avant modification.
+Les validations antérieures incluses dans le dossier sont historiques.
+
+Non vérifiés : délai réel inférieur à une seconde, comportement du compte réel
+avec batchGet, qualité RF à la cadence accrue, affichage et pesée physiques.
+Le repli individuel conserve le fonctionnement si la lecture groupée échoue.
+L'encodage exige toujours deux tags distincts et une confirmation physique.

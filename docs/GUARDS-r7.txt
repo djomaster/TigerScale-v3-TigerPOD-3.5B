@@ -1,0 +1,94 @@
+
+==> Regenerating the table of contents
+    ok
+
+==> Regenerating CODEMAP line numbers
+  runBambuImport                 15442 -> 15447
+  setupWebServer                 11622 -> 11625
+  sendSingleUidToCloud           12649 -> 12652
+  parseCloudSpoolMeta            12706 -> 12710
+  pushWeightToCloud              12756 -> 12760
+  fetchMetaFromApiByUid          12795 -> 12800
+  handleWeighWorkflow            12884 -> 12889
+  startMDNS                      13372 -> 13377
+  setupScale                     13410 -> 13415
+  isRapidChange                  13443 -> 13448
+  readWeight                     13492 -> 13497
+  playSoundTheme                 13697 -> 13702
+  rfidSelectReader               13796 -> 13801
+  normalizeRfidHwConfig          13850 -> 13855
+  setupRFID                      14067 -> 14072
+  setupServo                     14071 -> 14076
+  processAutoTare                14111 -> 14116
+  fetchMetaFromFirestore         14440 -> 14445
+  readTigerTagMetadata           14534 -> 14539
+  pollRFIDReader                 15616 -> 15621
+  writeInventoryTags             14683 -> 14688
+  blankLoadTick                  14856 -> 14861
+  inventoryPickSpool             15128 -> 15133
+  selectSpoolContainer           14924 -> 14929
+  runInventoryAssignment         15308 -> 15313
+  releaseInventoryTags           15264 -> 15269
+  recoverRFIDReaderIfNeeded      15806 -> 15811
+  isDuplicateRecentUid           15826 -> 15831
+  isUidLatched                   15830 -> 15835
+  prepareRfidRead                14273 -> 14278
+  finishRfidSession              15851 -> 15856
+  otaApply                       16050 -> 16055
+  otaFetchLatest                 16192 -> 16197
+  lvglBuildMainScreen            16807 -> 16812
+  lvglUpdateMainScreen           17211 -> 17216
+  setup                          18335 -> 18340
+  loop                           18515 -> 18520
+  section 18         11514-11617 -> 11514-11620
+  section 19         11618-12645 -> 11621-12648
+  section 20         12646-12830 -> 12649-12835
+  section 21         12831-13368 -> 12836-13373
+  section 22         13369-13406 -> 13374-13411
+  section 23         13407-13612 -> 13412-13617
+  section AUDIO      13613-13738 -> 13618-13743
+  section 24         13739-15862 -> 13744-15867
+  section 25         15863-16539 -> 15868-16544
+  section LVGL       16540-17465 -> 16545-17470
+  section LIVE       17466-18315 -> 17471-18320
+  section 26         18316-19347 -> 18321-19352
+
+CODEMAP.md updated (49 entries).
+
+==> Table of contents is current
+    ok
+
+==> CODEMAP anchors
+    CODEMAP check PASSED (80 anchors, max drift 0).
+
+==> i18n — firmware table and web locales
+    i18n check PASSED.
+
+==> Every word on the panel comes from the translation table
+    checked 169 LVGL text setter call site(s), 0 violation(s)
+
+==> UI fonts cover every string
+    UI font check PASSED.
+
+==> Generated files agree with their own declarations
+    checked 3 bitmap header(s) and 6 font face(s) against their own declarations, 0 disagreement(s)
+
+==> Documented device names match the firmware's
+    scanned 36 documents against 'tigerscale-%02X%02X', 0 violation(s)
+
+==> llms.txt still describes this repository
+    checked llms.txt against platformio.ini, CLAUDE.md and the firmware, 0 disagreement(s)
+
+==> No emoji in documentation
+    emoji check PASSED (67 files).
+
+==> File format — line endings, BOM, invisible characters
+    file format check PASSED (LF, no BOM, no invisible controls).
+
+==> No mojibake in code or data
+    mojibake check PASSED.
+
+==> Release notes for the current version
+    ok (docs/release-notes/v3.11.0.md)
+
+All checks passed.
