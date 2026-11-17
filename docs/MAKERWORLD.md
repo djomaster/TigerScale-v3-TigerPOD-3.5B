@@ -181,7 +181,7 @@ cd TigerScale-v3-TigerPOD-3.5B
 bash scripts/flash.sh --fs
 ```
 
-Over-the-air update is disabled in this edition: update over USB. MIT licensed. Issues,
+Over-the-air update from Settings > Update (this repository's release assets only, manual check); first install over USB or the web installer. MIT licensed. Issues,
 questions and improvements welcome.
 
 ## Community

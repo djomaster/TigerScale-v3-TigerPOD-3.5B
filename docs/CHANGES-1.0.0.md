@@ -1,7 +1,7 @@
 # v3.13 fork custom 3.5B — 1.0
 
 Révision source du 15 novembre 2026, identité
-`3.13.0-pod.1.0.0+fork3.11+3.5B+POD`, version affichée `V3 v3.13.0 - POD v1.0.0`.
+`3.13.0-pod.1.1.0+fork3.11+3.5B+POD` (1.0.0 : `3.13.0-pod.1.0.0`), version affichée `V3 v3.13.0 - POD v1.1.0`.
 Base : copie de la r8.3 custom, sans modification des livraisons précédentes.
 Ce firmware reste le fork historique 3.11 avec le port RFID 3.13 et les ajouts
 custom ; il ne s'agit pas d'un remplacement par le firmware public 3.13.
@@ -36,6 +36,8 @@ sur le compte ou les tags réels n'ont été exécutés pour cette livraison.
   Les autres diagnostics techniques restent disponibles dans le moniteur série.
 
 ## Mises à jour
+
+**Depuis la 1.1.0 (3.13.0-pod.1.1.0)** : la mise à jour par Réglages > Mise à jour est rétablie sur le canal de ce dépôt (manifeste `version.json` du site Pages, fichiers des releases de ce dépôt uniquement, SHA-256 obligatoire, aucune vérification automatique, commande cloud `ota_update` refusée). Ce qui suit décrit la révision 1.0.0, où tout était bloqué.
 
 Les propositions du fork d'origine, dont 3.11, sont désactivées. Aucun canal custom
 compatible et validé n'existe actuellement : **toutes les installations OTA sont

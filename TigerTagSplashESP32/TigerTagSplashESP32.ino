@@ -16,33 +16,33 @@
 //   TABLE OF CONTENTS                                     line range
 //   ---------------------------------------------------- -----------
 //   HARDWARE CONFIGURATION                                 339-  576
-//   OTA CONFIGURATION                                      577-  618
-//   FORWARD DECLARATIONS                                   619-  989
-//   WEIGHT ROUNDING                                        990- 1009
-//   GLOBAL OBJECTS                                        1010- 1869
-//   CONFIGURATION VARIABLES                               1870- 2326
-//   OLED DISPLAY                                          2327- 3144
-//   CLOUD PARSING                                         3145- 3159
-//   WIFI SETUP                                            3160- 7946
-//   LITTLEFS                                              7947- 8250
-//   FIREBASE AUTHENTICATION                               8251-10973
-//   WEBSOCKET                                            10974-11000
-//   CLOUD WORKER TASK  (non-blocking Firestore on core 0) 11001-11141
-//   UNIFIED WS FRAME BUILDER                             11142-11266
-//   WEIGHT FILTER HELPERS                                11267-11282
-//   POST-SEND STATE RESET (shared by all send paths)     11283-11303
-//   SHARED WEIGHT PUSH HANDLER (used by /api/weight and /api/push-weight) 11304-11410
-//   WEB SERVER                                           11411-12438
-//   CLOUD COMMUNICATION                                  12439-12625
-//   WEIGH WORKFLOW  (IDLE → SCANNING → STABLE_WAIT → SENDING) 12626-13163
-//   mDNS                                                 13164-13201
-//   SCALE                                                13202-13407
-//   ES8311 codec beep (I2S slave mode, Wire I2C @ 0x18)  13408-13533
-//   RFID                                                 13534-15718
-//   OTA — Over-the-air firmware + filesystem update    15719-16132
-//   LVGL bridge + main weigh screen                      16133-17041
-//   Remote live view: the screen out, taps back in       17042-17909
-//   SETUP & LOOP                                         17910-18948
+//   OTA CONFIGURATION                                      577-  622
+//   FORWARD DECLARATIONS                                   623-  993
+//   WEIGHT ROUNDING                                        994- 1013
+//   GLOBAL OBJECTS                                        1014- 1873
+//   CONFIGURATION VARIABLES                               1874- 2330
+//   OLED DISPLAY                                          2331- 3148
+//   CLOUD PARSING                                         3149- 3163
+//   WIFI SETUP                                            3164- 8310
+//   LITTLEFS                                              8311- 8614
+//   FIREBASE AUTHENTICATION                               8615-11337
+//   WEBSOCKET                                            11338-11364
+//   CLOUD WORKER TASK  (non-blocking Firestore on core 0) 11365-11505
+//   UNIFIED WS FRAME BUILDER                             11506-11630
+//   WEIGHT FILTER HELPERS                                11631-11646
+//   POST-SEND STATE RESET (shared by all send paths)     11647-11667
+//   SHARED WEIGHT PUSH HANDLER (used by /api/weight and /api/push-weight) 11668-11774
+//   WEB SERVER                                           11775-12802
+//   CLOUD COMMUNICATION                                  12803-12989
+//   WEIGH WORKFLOW  (IDLE → SCANNING → STABLE_WAIT → SENDING) 12990-13527
+//   mDNS                                                 13528-13565
+//   SCALE                                                13566-13771
+//   ES8311 codec beep (I2S slave mode, Wire I2C @ 0x18)  13772-13897
+//   RFID                                                 13898-16082
+//   OTA — Over-the-air firmware + filesystem update    16083-16746
+//   LVGL bridge + main weigh screen                      16747-17655
+//   Remote live view: the screen out, taps back in       17656-18523
+//   SETUP & LOOP                                         18524-19563
 //
 //   To regenerate:  bash scripts/update_toc.sh
 // --- TOC END -----------------------------------------------
@@ -579,9 +579,9 @@ const char* TIGERTAG_FIREBASE_WEB_API_KEY = "AIzaSyCkxPTs_Cv0KVLqsZj-UKWWqIY0Otf
 
 // Embedded build identity — exposed via /api/status and the heartbeat so the
 // app/Studio can compare against the latest published version.json.
-#define TIGERSCALE_FW_VERSION  "3.13.0-pod.1.0.0"
-#define TIGERSCALE_VERSION_LABEL "V3 v3.13.0 - POD v1.0.0"
-#define TIGERSCALE_CUSTOM_BUILD "3.13.0-pod.1.0.0+fork3.11+3.5B+POD"
+#define TIGERSCALE_FW_VERSION  "3.13.0-pod.1.1.0"
+#define TIGERSCALE_VERSION_LABEL "V3 v3.13.0 - POD v1.1.0"
+#define TIGERSCALE_CUSTOM_BUILD "3.13.0-pod.1.1.0+fork3.11+3.5B+POD"
 static bool gPodPhysicalOnly = false;
 static bool gPodWriteAllowed = false;
 static void runPodTest();
@@ -607,8 +607,12 @@ static void runPodInventory(bool associate = false, bool updatePrompt = false);
 // different hardware (ESP32-WROOM / RC522 / OLED) and its firmware.bin would
 // brick a V3 unit; sharing one version.json between the two generations would
 // mean each offering the other's binary as an update.
-// No approved custom distribution channel exists. Fail closed; USB builds only.
-const char* TIGERSCALE_VERSION_URL = "";
+// This fork publishes its own manifest on its own Pages site and its images as
+// release assets of its own repository. Nothing else is ever installed: see
+// otaUrlAllowed().
+const char* TIGERSCALE_VERSION_URL = "https://djomaster.github.io/TigerScale-v3-TigerPOD-3.5B/version.json";
+#define TIGERSCALE_OTA_AUTOCHECK 0
+#define TIGERSCALE_OTA_ASSET_BASE "https://github.com/djomaster/TigerScale-v3-TigerPOD-3.5B/releases/download/"
 
 // How often to poll the Firestore command queue (commands/{id} subcollection).
 // Reuses the heartbeat tick (every 30 s) so we don't add a separate timer.
@@ -7302,7 +7306,364 @@ static bool runAccountPairing(bool* wantsEmail) {
 }
 
 static void runOtaMenu() {
-    lvglNotice("Version custom : mise a jour par USB. Canal custom non configure.");
+    enum OtaAction { OA_NONE, OA_BACK, OA_INSTALL, OA_RETRY };
+    static OtaAction sOtaAction;
+    auto actionCb = [](lv_event_t *e) {
+        lv_obj_t *o = (lv_obj_t *)lv_event_get_target(e);
+        sOtaAction = (OtaAction)(intptr_t)lv_obj_get_user_data(o);
+    };
+
+    lv_obj_t *scr = lv_obj_create(nullptr);
+    lv_obj_set_style_bg_color(scr, LVCOL_BG, 0);
+    lv_obj_set_style_border_width(scr, 0, 0);
+    lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t *header = lvglAddHeader(scr, t(I18N_UPDATE), actionCb, nullptr, (intptr_t)OA_BACK);
+
+    // House label/value rows, same grammar as the Account page. Row 1 (the
+    // installed version) is always there; row 2 only exists when there is a
+    // new version to talk about — "latest = installed" is self-evident on an
+    // up-to-date scale and was pure noise.
+    auto mkRow = [&](int y, int h) {
+        lv_obj_t *r = lv_obj_create(scr);
+        lv_obj_set_size(r, 420, h);
+        lv_obj_align(r, LV_ALIGN_TOP_MID, 0, y);
+        lv_obj_set_style_bg_color(r, LVCOL_CARD, 0);
+        lv_obj_set_style_border_color(r, LVCOL_BORDER, 0);
+        lv_obj_set_style_border_width(r, 1, 0);
+        lv_obj_set_style_radius(r, 10, 0);
+        lv_obj_set_style_shadow_width(r, 0, 0);
+        lv_obj_clear_flag(r, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_clear_flag(r, LV_OBJ_FLAG_CLICKABLE);
+        return r;
+    };
+    lv_obj_t *row1 = mkRow(60, 44);
+    lv_obj_t *row1Name = lv_label_create(row1);
+    lv_label_set_text(row1Name, t(I18N_OTA_INSTALLED_VER));
+    lv_obj_set_style_text_color(row1Name, LVCOL_MUTED, 0);
+    lv_obj_align(row1Name, LV_ALIGN_LEFT_MID, 14, 0);
+    char cv[16]; snprintf(cv, sizeof(cv), "v%s", TIGERSCALE_FW_VERSION);
+    lv_obj_t *row1Val = lv_label_create(row1);
+    lv_label_set_text(row1Val, cv);
+    lv_obj_set_style_text_color(row1Val, LVCOL_TEXT, 0);
+    lv_obj_align(row1Val, LV_ALIGN_RIGHT_MID, -14, 0);
+
+    // Row 2 — the update-available banner: amber 2 px border, download
+    // glyph, the new version number in amber. Hidden unless there is one.
+    const lv_color_t AMBER = LVCOL_YELLOW;
+    lv_obj_t *row2 = mkRow(112, 56);
+    lv_obj_set_style_border_color(row2, AMBER, 0);
+    lv_obj_set_style_border_width(row2, 2, 0);
+    lv_obj_t *row2Name = lv_label_create(row2);
+    lv_label_set_text(row2Name, (String(LV_SYMBOL_DOWNLOAD) + "  " + t(I18N_OTA_NEW_VER)).c_str());
+    lv_obj_set_style_text_color(row2Name, LVCOL_TEXT, 0);
+    lv_obj_set_style_text_font(row2Name, &gFont16, 0);
+    lv_obj_align(row2Name, LV_ALIGN_LEFT_MID, 14, 0);
+    lv_obj_t *row2Val = lv_label_create(row2);
+    lv_obj_set_style_text_color(row2Val, AMBER, 0);
+    lv_obj_set_style_text_font(row2Val, &gFont20, 0);
+    lv_obj_align(row2Val, LV_ALIGN_RIGHT_MID, -14, 0);
+    lv_obj_add_flag(row2, LV_OBJ_FLAG_HIDDEN);
+
+    // Center zone: a spinner while checking, a colored badge + message for
+    // the terminal states (up to date / cannot check).
+    lv_obj_t *chkSpin = lv_spinner_create(scr, 1000, 60);
+    lv_obj_set_size(chkSpin, 48, 48);
+    lv_obj_align(chkSpin, LV_ALIGN_TOP_MID, 0, 150);
+    lv_obj_add_flag(chkSpin, LV_OBJ_FLAG_HIDDEN);
+
+    lv_obj_t *badge = lv_obj_create(scr);
+    lv_obj_remove_style_all(badge);
+    lv_obj_set_size(badge, 48, 48);
+    lv_obj_align(badge, LV_ALIGN_TOP_MID, 0, 150);
+    lv_obj_set_style_radius(badge, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_border_width(badge, 3, 0);
+    lv_obj_clear_flag(badge, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_t *badgeMark = lv_label_create(badge);
+    lv_obj_set_style_text_font(badgeMark, &lv_font_montserrat_28, 0);
+    lv_obj_center(badgeMark);
+    lv_obj_add_flag(badge, LV_OBJ_FLAG_HIDDEN);
+
+    lv_obj_t *centerMsgLbl = lv_label_create(scr);
+    lv_obj_set_style_text_font(centerMsgLbl, &gFont16, 0);
+    lv_label_set_long_mode(centerMsgLbl, LV_LABEL_LONG_WRAP);
+    lv_obj_set_size(centerMsgLbl, 420, LV_SIZE_CONTENT);
+    lv_obj_set_style_text_align(centerMsgLbl, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(centerMsgLbl, LV_ALIGN_TOP_MID, 0, 210);
+    lv_obj_add_flag(centerMsgLbl, LV_OBJ_FLAG_HIDDEN);
+
+    // Bottom: the blue Install, its reassurance line, and Retry.
+    lv_obj_t *installBtn = lv_btn_create(scr);
+    lv_obj_set_size(installBtn, 280, 56);
+    lv_obj_align(installBtn, LV_ALIGN_BOTTOM_MID, 0, -40);
+    lv_obj_set_style_bg_color(installBtn, LVCOL_ACCENT, 0);
+    lv_obj_set_style_radius(installBtn, 12, 0);
+    lv_obj_set_style_shadow_width(installBtn, 0, 0);
+    lv_obj_set_user_data(installBtn, (void *)(intptr_t)OA_INSTALL);
+    lv_obj_add_event_cb(installBtn, actionCb, LV_EVENT_CLICKED, nullptr);
+    lv_obj_t *installLbl = lv_label_create(installBtn);
+    lv_label_set_text(installLbl, t(I18N_INSTALL));
+    lv_obj_set_style_text_color(installLbl, LVCOL_TEXT, 0);
+    lv_obj_set_style_text_font(installLbl, &gFont16, 0);
+    lv_obj_center(installLbl);
+    lv_obj_add_flag(installBtn, LV_OBJ_FLAG_HIDDEN);
+
+    lv_obj_t *keepsLbl = lv_label_create(scr);
+    lv_label_set_text(keepsLbl, t(I18N_OTA_KEEPS));
+    lv_obj_set_style_text_color(keepsLbl, LVCOL_FAINT, 0);
+    lv_obj_set_style_text_font(keepsLbl, &gFont14, 0);
+    lv_obj_align(keepsLbl, LV_ALIGN_BOTTOM_MID, 0, -14);
+    lv_obj_add_flag(keepsLbl, LV_OBJ_FLAG_HIDDEN);
+
+    lv_obj_t *retryBtn = lv_btn_create(scr);
+    lv_obj_set_size(retryBtn, 220, 48);
+    lv_obj_align(retryBtn, LV_ALIGN_BOTTOM_MID, 0, -14);
+    lv_obj_set_style_bg_color(retryBtn, LVCOL_CARD, 0);
+    lv_obj_set_style_border_color(retryBtn, LVCOL_BORDER, 0);
+    lv_obj_set_style_border_width(retryBtn, 1, 0);
+    lv_obj_set_style_radius(retryBtn, 12, 0);
+    lv_obj_set_style_shadow_width(retryBtn, 0, 0);
+    lv_obj_set_user_data(retryBtn, (void *)(intptr_t)OA_RETRY);
+    lv_obj_add_event_cb(retryBtn, actionCb, LV_EVENT_CLICKED, nullptr);
+    lv_obj_t *retryLbl = lv_label_create(retryBtn);
+    lv_label_set_text(retryLbl, t(I18N_WIFI_RETRY));
+    lv_obj_set_style_text_color(retryLbl, LVCOL_MUTED, 0);
+    lv_obj_set_style_text_font(retryLbl, &gFont16, 0);
+    lv_obj_center(retryLbl);
+    lv_obj_add_flag(retryBtn, LV_OBJ_FLAG_HIDDEN);
+
+    // --- progress ring, shown only while the images are being written -----------
+    // Hidden until Install is confirmed, at which point it replaces the whole page.
+    lv_obj_t *ring = lv_arc_create(scr);
+    lv_obj_set_size(ring, 150, 150);
+    lv_obj_align(ring, LV_ALIGN_TOP_MID, 0, 34);   // centre lands at (240, 109)
+    lv_arc_set_rotation(ring, 270);                // start at 12 o'clock
+    lv_arc_set_bg_angles(ring, 0, 360);
+    lv_arc_set_range(ring, 0, 100);
+    lv_arc_set_value(ring, 0);
+    lv_obj_remove_style(ring, nullptr, LV_PART_KNOB);   // not a control, just an indicator
+    lv_obj_clear_flag(ring, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_arc_width(ring, 9, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(ring, 9, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_color(ring, lv_color_hex(0x26456F), LV_PART_MAIN);
+    lv_obj_set_style_arc_color(ring, LVCOL_GREEN, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_rounded(ring, true, LV_PART_INDICATOR);
+    lv_obj_add_flag(ring, LV_OBJ_FLAG_HIDDEN);
+
+    // The arrow is drawn with lv_line rather than an icon glyph: a line passes
+    // exactly through the points given, so it needs none of the bitmap workaround
+    // that lv_obj_align_to() forces on small icons (docs/FIRMWARE.md, LVGL v8 traps).
+    // Points span x 0..30, y 8..44, so the ink centre is (15, 26); placing the
+    // objects at (225, 83) puts that centre on the ring's.
+    static const lv_point_t kArrowShaft[] = { {15, 8}, {15, 44} };
+    static const lv_point_t kArrowHead[]  = { {0, 23}, {15, 8}, {30, 23} };
+    lv_obj_t *arrow[2];
+    for (int i = 0; i < 2; i++) {
+        arrow[i] = lv_line_create(scr);
+        lv_line_set_points(arrow[i], i == 0 ? kArrowShaft : kArrowHead, i == 0 ? 2 : 3);
+        lv_obj_set_pos(arrow[i], 225, 83);
+        lv_obj_set_style_line_color(arrow[i], LVCOL_GREEN, 0);
+        lv_obj_set_style_line_width(arrow[i], 8, 0);
+        lv_obj_set_style_line_rounded(arrow[i], true, 0);
+        lv_obj_add_flag(arrow[i], LV_OBJ_FLAG_HIDDEN);
+    }
+
+    lv_obj_t *ringPct = lv_label_create(scr);
+    lv_obj_set_style_text_color(ringPct, LVCOL_TEXT, 0);
+    lv_obj_set_style_text_font(ringPct, &lv_font_montserrat_28, 0);
+    lv_obj_align(ringPct, LV_ALIGN_TOP_MID, 0, 190);
+    lv_obj_add_flag(ringPct, LV_OBJ_FLAG_HIDDEN);
+
+    lv_obj_t *ringMsg = lv_label_create(scr);
+    lv_obj_set_style_text_color(ringMsg, LVCOL_MUTED, 0);
+    lv_obj_align(ringMsg, LV_ALIGN_TOP_MID, 0, 228);
+    lv_obj_add_flag(ringMsg, LV_OBJ_FLAG_HIDDEN);
+
+    lv_obj_t *ringWarn = lv_label_create(scr);
+    lv_label_set_text(ringWarn, t(I18N_OTA_DO_NOT_POWER_OFF));
+    lv_obj_set_style_text_color(ringWarn, LVCOL_TEXT, 0);
+    lv_obj_align(ringWarn, LV_ALIGN_TOP_MID, 0, 258);
+    lv_obj_add_flag(ringWarn, LV_OBJ_FLAG_HIDDEN);
+
+    auto show = [&](lv_obj_t *o, bool on) {
+        if (on) lv_obj_clear_flag(o, LV_OBJ_FLAG_HIDDEN);
+        else    lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
+    };
+    auto stateChecking = [&]() {
+        show(row2, false); show(badge, false); show(centerMsgLbl, false);
+        show(installBtn, false); show(keepsLbl, false); show(retryBtn, false);
+        show(chkSpin, true);
+    };
+    auto stateBadge = [&](bool ok, const char *msg, bool retry) {
+        show(chkSpin, false); show(row2, false);
+        lv_obj_set_style_border_color(badge, ok ? LVCOL_GREEN : LVCOL_RED, 0);
+        lv_label_set_text(badgeMark, ok ? LV_SYMBOL_OK : LV_SYMBOL_CLOSE);
+        lv_obj_set_style_text_color(badgeMark, ok ? LVCOL_GREEN : LVCOL_RED, 0);
+        show(badge, true);
+        lv_label_set_text(centerMsgLbl, msg);
+        lv_obj_set_style_text_color(centerMsgLbl, ok ? LVCOL_GREEN : LVCOL_RED, 0);
+        show(centerMsgLbl, true);
+        show(retryBtn, retry);
+        show(installBtn, false); show(keepsLbl, false);
+    };
+    auto stateAvailable = [&]() {
+        show(chkSpin, false); show(badge, false); show(centerMsgLbl, false); show(retryBtn, false);
+        char nv[16]; snprintf(nv, sizeof(nv), "v%s", gOtaLatestVer.c_str());
+        lv_label_set_text(row2Val, nv);
+        show(row2, true);
+        show(installBtn, true); show(keepsLbl, true);
+    };
+    auto pump = [&](uint32_t ms) {
+        uint32_t t0 = millis(); while (millis() - t0 < ms) { lv_timer_handler(); delay(20); }
+    };
+    auto waitAction = [&]() -> OtaAction {
+        sOtaAction = OA_NONE;
+        while (sOtaAction == OA_NONE) { lv_timer_handler(); delay(5); }
+        return sOtaAction;
+    };
+
+    lv_scr_load(scr);
+
+    // Check loop — Retry re-enters it; Back leaves from any resting state.
+    bool install = false;
+    while (!install) {
+        stateChecking();
+        // Publish to /api/status too. Until this was here, an update driven from the
+        // touchscreen was invisible over HTTP: the screen called otaApply() directly
+        // with its own callback and never touched the shared status, so Studio and
+        // the web UI reported "idle, 0%" throughout.
+        otaSetStatus("checking", 0, "");
+        pump(1);
+
+        const char *failMsg = nullptr;
+        if (!WiFi.isConnected())             failMsg = t(I18N_OTA_NO_WIFI);
+        else if (!otaFetchLatestPumping())   failMsg = t(I18N_OTA_CHECK_FAILED);
+
+        if (failMsg) {
+            stateBadge(false, failMsg, true);
+            otaSetStatus("idle", 0, "");
+            OtaAction a = waitAction();
+            if (a == OA_RETRY) continue;
+            break;                                   // Back
+        }
+
+        bool isNewer = gOtaLatestVer.length() > 0
+                       && gOtaLatestVer != String(TIGERSCALE_FW_VERSION);
+        if (!isNewer) {
+            stateBadge(true, t(I18N_OTA_UPTODATE_LONG), false);
+            otaSetStatus("idle", 0, "");
+            waitAction();                            // only Back is visible
+            break;
+        }
+
+        // A new version exists but this device cannot take it over the air:
+        // no firmware_url in the manifest, or no spare app slot. Same badge
+        // zone, the message says which route to use instead.
+        if (gOtaFirmwareUrl.length() == 0) {
+            stateBadge(false, "Use Studio Manager to install", false);
+            otaSetStatus("idle", 0, "");
+            waitAction();
+            break;
+        }
+        if (!otaFirmwareSlotAvailable()) {
+            Serial.println("[OTA] no ota_0/ota_1 app slot — firmware update over the air "
+                           "is impossible with this partition table");
+            stateBadge(false, "Update over USB", false);
+            otaSetStatus("idle", 0, "");
+            waitAction();
+            break;
+        }
+
+        stateAvailable();
+        // Wait for Install or Back. Install asks to confirm first; declining
+        // comes back here rather than leaving the page.
+        for (;;) {
+            OtaAction a = waitAction();
+            if (a == OA_BACK) { otaSetStatus("idle", 0, ""); break; }
+            if (a == OA_INSTALL && lvglAskYesNo(t(I18N_OTA_CONFIRM), t(I18N_OTA_CONFIRM_WARN))) {
+                install = true;
+                break;
+            }
+        }
+        if (!install) break;                         // Back out of the inner wait
+    }
+
+    if (!install) {
+        lv_scr_load(lvScreen);
+        lv_obj_del(scr);
+        { int16_t dx, dy; uint32_t t0 = millis(); while (tsRead(dx, dy) && millis()-t0 < 800) delay(20); }
+        return;
+    }
+
+    // --- Install ---
+    // The page gives way entirely: from here the screen has one job, and the only
+    // thing the user can do about it is leave the power on.
+    lv_obj_t *pageParts[] = { header, row1, row2, chkSpin, badge, centerMsgLbl,
+                              installBtn, keepsLbl, retryBtn };
+    for (lv_obj_t *o : pageParts) lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_t *ringParts[] = { ring, arrow[0], arrow[1], ringPct, ringMsg, ringWarn };
+    for (lv_obj_t *o : ringParts) lv_obj_clear_flag(o, LV_OBJ_FLAG_HIDDEN);
+    lv_label_set_text(ringPct, "0%");
+    lv_label_set_text(ringMsg, t(I18N_OTA_INSTALLING));
+    pump(1);
+
+    // One word covers the whole operation: otaApply reads from the socket and
+    // writes to flash in the same loop, so there is no separate download phase to
+    // name. The ring likewise runs 0-100 once across both images -- 0-50% for the
+    // web UI and 50-100% for the firmware when the manifest offers a filesystem,
+    // the full sweep when it is firmware only -- instead of resetting between them.
+    const bool haveFs = gOtaLittlefsUrl.length() > 0;
+    auto progressTo = [&](int base, int span, const char* phase) {
+        return [&, base, span, phase](int pct, const String& msg) {
+            int overall = base + (span * pct / 100);
+            lv_arc_set_value(ring, overall);
+            char pctBuf[8];
+            snprintf(pctBuf, sizeof(pctBuf), "%d%%", overall);
+            lv_label_set_text(ringPct, pctBuf);
+            otaSetStatus(phase, overall, msg);
+            lv_timer_handler();
+        };
+    };
+
+    // Filesystem FIRST, firmware second — the same order the /api/ota/update
+    // endpoint and the Firestore command handler use. Writing the app last means
+    // its reboot happens once everything else is already in place; doing it the
+    // other way round would reboot into new firmware still serving the old web UI.
+    bool ok = true;
+    if (haveFs) {
+        ok = otaApplyRetrying(gOtaLittlefsUrl, gOtaLittlefsSha, U_SPIFFS,
+                              progressTo(0, 50, "downloading"));
+        if (!ok) {
+            Serial.println("[OTA] filesystem image failed — aborting before the firmware");
+            otaSetStatus("error", 0, "Filesystem update failed");
+        }
+    }
+    if (ok) {
+        ok = otaApplyRetrying(gOtaFirmwareUrl, gOtaLatestSha, U_FLASH,
+                              progressTo(haveFs ? 50 : 0, haveFs ? 50 : 100, "flashing"));
+        if (!ok) otaSetStatus("error", 0, "Firmware update failed");
+    }
+
+    if (!ok) {
+        // Bring the page back, so the error has somewhere to be read and Back works.
+        for (lv_obj_t *o : ringParts) lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
+        show(header, true); show(row1, true);
+        stateBadge(false, t(I18N_OTA_ERROR), false);
+        waitAction();
+        lv_scr_load(lvScreen);
+        lv_obj_del(scr);
+        { int16_t dx, dy; uint32_t t0 = millis(); while (tsRead(dx, dy) && millis()-t0 < 800) delay(20); }
+        return;
+    }
+
+    // Full ring, and the warning goes: there is nothing left to interrupt.
+    lv_arc_set_value(ring, 100);
+    lv_label_set_text(ringPct, "100%");
+    lv_label_set_text(ringMsg, t(I18N_REBOOTING));
+    lv_obj_add_flag(ringWarn, LV_OBJ_FLAG_HIDDEN);
+    otaSetStatus("done", 100, "Rebooting…");
+    pump(2000);
+    ESP.restart();
 }
 
 // LVGL settings menu (2026-07-28) -- same actions/functions as the old
@@ -7592,8 +7953,11 @@ static void runSettingsMenu() {
         // running version.
         bool otaAvail = gOtaLatestVer.length() > 0
                         && gOtaLatestVer != String(TIGERSCALE_FW_VERSION);
-        // The Update row is hidden: this build installs nothing over the air (SA_UPDATE stays handled below).
-        (void)otaAvail;
+        makeRow(CI_GLYPH, LV_SYMBOL_REFRESH, otaAvail ? LVCOL_ORANGE : LVCOL_TEXT,
+                t(I18N_UPDATE),
+                otaAvail ? String(TIGERSCALE_FW_VERSION) + " > " + gOtaLatestVer
+                         : String(TIGERSCALE_FW_VERSION),
+                SA_UPDATE);
 
         // LV_SYMBOL_EYE_OPEN rather than the drawn CI_LAN node pair: the row is
         // named after what it does -- watch the panel from elsewhere -- and an
@@ -15738,7 +16102,13 @@ static String sha256ToHex(const uint8_t b[32]) {
     return h;
 }
 
-// Legacy slot query; a present partition never bypasses the custom OTA gates.
+// Only this project's own GitHub release assets may be installed.
+static bool otaUrlAllowed(const String& url) {
+    if (url.length() == 0) return true;   // that half of the update is not requested
+    return url.startsWith(TIGERSCALE_OTA_ASSET_BASE);
+}
+
+// Is there anywhere to write a firmware update? (needs an ota_N partition)
 static bool otaFirmwareSlotAvailable() {
     return esp_ota_get_next_update_partition(NULL) != NULL;
 }
@@ -15810,10 +16180,28 @@ static void otaJobTaskFn(void* arg) {
 
 // Start an OTA in the background. Returns false only if the task could not be
 // created, so a caller can answer the HTTP request honestly.
-// Custom policy: do not start the legacy installation task.
-static bool otaStartJob(const String&,const String&,const String&,const String&) {
-    Serial.println("[OTA CUSTOM] Network installation refused: no approved custom channel");return false;
+// 12 KB of stack: mbedTLS needs room, and the Update writes go through here too.
+static bool otaStartJob(const String& fwUrl, const String& fwSha,
+                        const String& fsUrl, const String& fsSha) {
+    // The installer only ever accepts this project's own release assets, with a
+    // checksum, whatever the caller (screen, local web API) asked for.
+    if (!otaUrlAllowed(fwUrl) || !otaUrlAllowed(fsUrl)) {
+        Serial.println("[OTA] refused: URL is not a release asset of this project");
+        return false;
+    }
+    if ((fwUrl.length() && fwSha.length() != 64) || (fsUrl.length() && fsSha.length() != 64)) {
+        Serial.println("[OTA] refused: a SHA-256 is required");
+        return false;
+    }
+    OtaJob* job = new (std::nothrow) OtaJob{fwUrl, fwSha, fsUrl, fsSha};
+    if (!job) return false;
+    if (xTaskCreatePinnedToCore(otaJobTaskFn, "otaJob", 12288, job, 1, nullptr, 1) != pdPASS) {
+        delete job;
+        return false;
+    }
+    return true;
 }
+
 
 // Legacy background entry point; the custom policy disables manifest fetches.
 static void otaCheckTaskFn(void* /*arg*/) {
@@ -15828,7 +16216,7 @@ static void otaCheckTaskFn(void* /*arg*/) {
         // Offering it is loop()'s job — LVGL is not thread-safe and this is a task.
         if (newer && gOtaFirmwareUrl.length() > 0) gOtaPromptPending = true;
     } else {
-        Serial.println("[OTA CUSTOM] No custom update channel configured");
+        Serial.println("[OTA] background check failed — manifest unreachable");
     }
     gOtaCheckRunning = false;
 }
@@ -15852,17 +16240,237 @@ static void otaSetStatus(const char* status, int progress, const String& message
     Serial.printf("[OTA] %s (%d%%) %s\n", status, progress, message.c_str());
 }
 
-// Final installation gate, including remote command queue calls.
-static bool otaApply(const String&,const String&,int,std::function<void(int,const String&)> onProgress = nullptr) {
-    Serial.println("[OTA CUSTOM] Flash download refused: USB custom builds only");return false;
+// Stream-download `url` into the OTA partition `updateType` (U_FLASH or
+// U_SPIFFS). Verifies SHA-256 if `expectedSha` is non-empty. Returns true on
+// success. Calls `onProgress(percent, msg)` periodically (optional callback).
+static bool otaApply(const String& url,
+                     const String& expectedSha,
+                     int updateType,
+                     std::function<void(int, const String&)> onProgress = nullptr) {
+    if (url.length() == 0) return false;
+    // Defence in depth: the callers check too, but this is the one place that writes flash.
+    if (!otaUrlAllowed(url) || expectedSha.length() != 64) {
+        Serial.println("[OTA] refused: URL not allowed or SHA-256 missing");
+        return false;
+    }
+    if (!WiFi.isConnected()) {
+        if (onProgress) onProgress(0, "WiFi not connected");
+        return false;
+    }
+
+    // What matters for a TLS handshake is the largest CONTIGUOUS block, not the
+    // total free heap: mbedTLS wants a big buffer in one piece. A second OTA image
+    // in the same session has failed here with "SSL - Memory allocation failed"
+    // while plenty of total heap remained, which is fragmentation, not exhaustion.
+    Serial.printf("[OTA] heap before connect: free=%u largest=%u psram=%u\n",
+                  (unsigned)ESP.getFreeHeap(), (unsigned)ESP.getMaxAllocHeap(),
+                  (unsigned)ESP.getFreePsram());
+
+    // HTTPS client (insecure — we rely on SHA-256 for integrity, see header note)
+    WiFiClientSecure client;
+    client.setInsecure();
+    client.setTimeout(15);
+
+    HTTPClient http;
+    http.setReuse(false);
+    http.setTimeout(15000);
+    if (!http.begin(client, url)) {
+        Serial.printf("[OTA] http.begin failed: %s\n", url.c_str());
+        return false;
+    }
+    // Follow GitHub Pages redirects
+    http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+
+    int code = http.GET();
+    if (code != 200) {
+        Serial.printf("[OTA] HTTP %d for %s\n", code, url.c_str());
+        http.end();
+        return false;
+    }
+
+    int total = http.getSize();
+    if (total <= 0) {
+        Serial.println("[OTA] Unknown content length");
+        http.end();
+        return false;
+    }
+
+    if (!Update.begin(total, updateType)) {
+        Serial.printf("[OTA] Update.begin failed (need=%d free=%d)\n",
+                      total, (int)ESP.getFreeSketchSpace());
+        http.end();
+        return false;
+    }
+
+    // Hash while writing
+    mbedtls_sha256_context shaCtx;
+    mbedtls_sha256_init(&shaCtx);
+    mbedtls_sha256_starts(&shaCtx, 0);
+
+    WiFiClient* stream = http.getStreamPtr();
+    uint8_t buf[1024];
+    int written = 0;
+    int lastReportPct = -1;
+    uint32_t lastByteMs = millis();
+
+    while (http.connected() && written < total) {
+        size_t avail = stream->available();
+        if (avail > 0) {
+            int n = stream->readBytes(buf, std::min(avail, sizeof(buf)));
+            if (n <= 0) break;
+            mbedtls_sha256_update(&shaCtx, buf, n);
+            int w = Update.write(buf, n);
+            if (w != n) {
+                Serial.printf("[OTA] write mismatch %d != %d\n", w, n);
+                Update.abort();
+                mbedtls_sha256_free(&shaCtx);
+                http.end();
+                return false;
+            }
+            written += n;
+            lastByteMs = millis();
+
+            int pct = (written * 100) / total;
+            if (pct != lastReportPct && pct % 5 == 0) {
+                lastReportPct = pct;
+                if (onProgress) onProgress(pct, "Downloading…");
+            }
+        } else {
+            // Idle — give up only after a real silence. This was 10 s, which is
+            // aggressive: a TLS record can genuinely gap for longer than that on a
+            // busy device, and the abort looked like a network fault when it was
+            // impatience. The heap is logged because the one stall that was
+            // captured happened with the heap down at ~31 KB, and the next one
+            // should not have to be guessed at.
+            if (millis() - lastByteMs > OTA_STALL_MS) {
+                Serial.printf("[OTA] no data for %lu s at %d/%d bytes — aborting "
+                              "(heap=%u largest=%u)\n",
+                              (unsigned long)(OTA_STALL_MS / 1000), written, total,
+                              (unsigned)ESP.getFreeHeap(), (unsigned)ESP.getMaxAllocHeap());
+                Update.abort();
+                mbedtls_sha256_free(&shaCtx);
+                http.end();
+                return false;
+            }
+            delay(2);
+        }
+    }
+
+    uint8_t shaBytes[32];
+    mbedtls_sha256_finish(&shaCtx, shaBytes);
+    mbedtls_sha256_free(&shaCtx);
+    String shaHex = sha256ToHex(shaBytes);
+
+    http.end();
+
+    // Verify integrity
+    if (expectedSha.length() > 0) {
+        String expected = expectedSha; expected.toLowerCase();
+        if (!shaHex.equalsIgnoreCase(expected)) {
+            Serial.printf("[OTA] SHA mismatch.\n  expected: %s\n  got:      %s\n",
+                          expected.c_str(), shaHex.c_str());
+            Update.abort();
+            return false;
+        }
+        Serial.println("[OTA] SHA-256 verified OK");
+    } else {
+        Serial.printf("[OTA] No expected SHA provided (got %s) — skipping verification\n",
+                      shaHex.c_str());
+    }
+
+    if (!Update.end(true)) {
+        Serial.printf("[OTA] Update.end failed: %s\n", Update.errorString());
+        return false;
+    }
+
+    Serial.printf("[OTA] %s partition flashed (%d bytes) OK\n",
+                  updateType == U_FLASH ? "FIRMWARE" : "FILESYSTEM", written);
+    return true;
 }
 
-// Clear upstream proposals. A future custom channel requires an explicit policy.
+// Fetch /version.json from GitHub Pages and populate the "latest" globals.
+// Used by /api/ota/check (called from the local web UI).
 bool otaFetchLatest() {
-    gOtaLatestVer="";gOtaLatestSha="";gOtaFirmwareUrl="";
-    gOtaLittlefsUrl="";gOtaLittlefsSha="";gOtaPromptPending=false;
-    Serial.println("[OTA CUSTOM] Disabled: no approved compatible custom channel; use USB.");
-    return false;
+    if (!WiFi.isConnected()) {
+        Serial.println("[OTA] fetch: no WiFi");
+        return false;
+    }
+    WiFiClientSecure client; client.setInsecure();
+    HTTPClient http;
+    http.setTimeout(8000);
+    if (!http.begin(client, TIGERSCALE_VERSION_URL)) {
+        Serial.printf("[OTA] fetch: http.begin failed for %s\n", TIGERSCALE_VERSION_URL);
+        return false;
+    }
+    http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+    int code = http.GET();
+    String resp = http.getString();
+    http.end();
+    if (code != 200) {
+        // Negative codes are HTTPClient's own errors (connection refused, TLS
+        // failure, timeout); positive ones came from the server.
+        Serial.printf("[OTA] fetch: HTTP %d (%s) for %s\n",
+                      code, HTTPClient::errorToString(code).c_str(),
+                      TIGERSCALE_VERSION_URL);
+        return false;
+    }
+
+    // Parse through a FILTER, not into a buffer sized for the whole document.
+    //
+    // The published manifest carries far more than this device needs: an entry per
+    // transport for the web installer, partition offsets, release links. It is
+    // ~3.5 KB and will keep growing. A StaticJsonDocument<1024> over the whole
+    // thing fails with NoMemory — which surfaced as "manifest unreachable", making
+    // a parser problem look like a network one.
+    //
+    // With a filter, ArduinoJson skips everything not listed and only the five
+    // fields below are ever allocated, so the manifest can grow without limit.
+    StaticJsonDocument<256> filter;
+    filter["version"]      = true;
+    filter["littlefs_url"] = true;
+    filter["littlefs_sha"] = true;
+#if TS_BOARD_NONB
+    // A -3.5 takes its firmware from its own section of the manifest, and has
+    // NO fallback to the flat keys. That is deliberate: the flat keys describe
+    // the -3.5B build, and a -3.5 that installed it would come up with a black
+    // screen and no way to say why.
+    filter["boards"][TIGERSCALE_BOARD_ID]["firmware_url"] = true;
+    filter["boards"][TIGERSCALE_BOARD_ID]["firmware_sha"] = true;
+#else
+    // The -3.5B reads the flat keys, exactly as every firmware ever shipped has.
+    // Nothing about this path may change: scales that have been offline for
+    // months come back and read these five fields and nothing else.
+    filter["firmware_sha"] = true;
+    filter["firmware_url"] = true;
+#endif
+
+    StaticJsonDocument<768> doc;
+    DeserializationError jerr = deserializeJson(doc, resp, DeserializationOption::Filter(filter));
+    if (jerr) {
+        Serial.printf("[OTA] fetch: JSON parse failed (%s), %u bytes received\n",
+                      jerr.c_str(), (unsigned)resp.length());
+        return false;
+    }
+
+    gOtaLatestVer   = String(doc["version"]      | "");
+#if TS_BOARD_NONB
+    JsonVariantConst board = doc["boards"][TIGERSCALE_BOARD_ID];
+    if (board.isNull()) {
+        Serial.printf("[OTA] fetch: manifest carries no entry for board %s\n",
+                      TIGERSCALE_BOARD_ID);
+        return false;
+    }
+    gOtaLatestSha   = String(board["firmware_sha"] | "");
+    gOtaFirmwareUrl = String(board["firmware_url"] | "");
+#else
+    gOtaLatestSha   = String(doc["firmware_sha"] | "");
+    gOtaFirmwareUrl = String(doc["firmware_url"] | "");
+#endif
+    // Optional: a manifest may also publish the web UI image. Absent in older
+    // manifests, so treat a missing key as "firmware only", never as an error.
+    gOtaLittlefsUrl = String(doc["littlefs_url"] | "");
+    gOtaLittlefsSha = String(doc["littlefs_sha"] | "");
+    return gOtaLatestVer.length() > 0;
 }
 
 // -------------------------------------------------------------------------
@@ -15920,6 +16528,12 @@ static void processCommand(const String& cmdId, JsonObject fields) {
     pushSessionEvent("cmd", "id=" + cmdId + " type=" + type);
 
     if (type == "ota_update") {
+        // Updates are started from the scale's own Settings > Update screen only.
+        updateCommandStatus(cmdId, "error", 0, "OTA from the cloud is disabled");
+        Serial.println("[OTA] remote ota_update refused");
+        return;
+    }
+    if (false) {
         String fwUrl = fields["firmware_url"]["stringValue"]    | "";
         String fsUrl = fields["littlefs_url"]["stringValue"]    | "";
         String fwSha = fields["firmware_sha256"]["stringValue"] | "";
@@ -18353,7 +18967,8 @@ void loop() {
 
     // Automatic update check: once shortly after boot, then every 6 h. Mirrors the
     // DB sync block above — a one-shot task so loop() is never blocked.
-    if (WiFi.isConnected() && !gOtaCheckRunning && !otaBusy()) {
+    // This fork checks only when the owner opens Settings > Update.
+    if (TIGERSCALE_OTA_AUTOCHECK && WiFi.isConnected() && !gOtaCheckRunning && !otaBusy()) {
         bool shouldCheck = false;
         if (gLastOtaCheckMs == 0) {
             if (millis() >= OTA_CHECK_BOOT_DELAY_MS) shouldCheck = true;

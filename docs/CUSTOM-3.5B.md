@@ -1,4 +1,4 @@
-# TigerScale-V3-TigerPOD+ - V3 v3.13.0 - POD v1.0.0 - Waveshare 3.5B
+# TigerScale-V3-TigerPOD+ - V3 v3.13.0 - POD v1.1.0 - Waveshare 3.5B
 
 Cette copie inclut le portage RFID de l'officielle 3.13.0. Lire aussi
 [les changements RFID et la migration](RFID-3.13-PORT.md).
@@ -11,10 +11,10 @@ comme references du fork parent, sans support dans cette edition.
 
 ## Interface et TigerPOD (1.0)
 
-Version `3.13.0-pod.1.0.0` : interface refaite d'apres les maquettes, menu TigerPOD traduit dans les 11 langues,
+Version `3.13.0-pod.1.1.0`. La 1.0.0 apportait : interface refaite d'apres les maquettes, menu TigerPOD traduit dans les 11 langues,
 icones des lecteurs et logo Tiger System generes dans `ui_icons.h`. Details, protocole d'essai et retour arriere :
 [CHANGES-1.0.0.md](CHANGES-1.0.0.md) ; comparaison avec l'officielle :
-[CHANGES-vs-official-3.13.0.md](CHANGES-vs-official-3.13.0.md). La mise a jour en ligne est desactivee dans cette edition.
+[CHANGES-vs-official-3.13.0.md](CHANGES-vs-official-3.13.0.md). La mise a jour en ligne se fait depuis Reglages > Mise a jour (depuis la 1.1.0).
 
 ## Batterie et veille
 
@@ -63,8 +63,10 @@ par le framework ESP32 et copie dans le dossier de livraison :
 Un flash USB a ces adresses epargne la NVS. `firmware.factory.bin` est une image
 fusionnee : l'utiliser a 0x0000 efface les reglages contenus dans sa plage.
 
-La mise a jour en ligne (OTA) est desactivee dans cette edition : installer par USB avec PlatformIO. Flasher
-un firmware standard remplace les personnalisations ; conserver ces sources.
+Premiere installation : par USB avec PlatformIO ou par la page d'installation. Ensuite, Reglages > Mise a jour
+verifie le manifeste du depot (aucune verification automatique) et installe uniquement les fichiers publies
+dans les releases de ce depot, avec controle SHA-256. Flasher un firmware officiel remplace les
+personnalisations ; conserver ces sources.
 Le depot GitHub est https://github.com/djomaster/TigerScale-v3-TigerPOD-3.5B.
 
 La compilation et les tests logiciels ne valident pas la carte reelle. Verifier

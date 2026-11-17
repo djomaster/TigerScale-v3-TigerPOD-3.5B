@@ -374,6 +374,7 @@ same language set as the firmware).
 
 Short list, each one earned.
 
+- **The updater installs this repository's own release assets only.** `otaUrlAllowed()` pins the URL to `TIGERSCALE_OTA_ASSET_BASE`, a 64-character SHA-256 is mandatory, there is no automatic check (`TIGERSCALE_OTA_AUTOCHECK` is 0) and the cloud `ota_update` command is refused. Never widen any of the four: this build's firmware must not be replaced by the official one.
 - **Never commit, tag or push without being asked.** Make the change, run the
   guards, report, and stop. The one thing that cannot be undone by editing a
   file is a tag that has already been pushed: the release workflow acts on it.

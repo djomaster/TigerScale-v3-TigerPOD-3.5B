@@ -12,6 +12,23 @@ scaffold's placeholder text.
 
 ## [Unreleased]
 
+## [3.13.0-pod.1.1.0] - 2026-11-16
+
+Over-the-air update is back, on this fork's own channel. Full notes: `docs/release-notes/v3.13.0-pod.1.1.0.md`.
+
+### Added
+- Settings > Update checks `https://djomaster.github.io/TigerScale-v3-TigerPOD-3.5B/version.json` when opened and installs the firmware and web UI from this repository's GitHub release assets, with SHA-256 verification before the boot partition is switched.
+- The Update row is back in Settings, with the usual "running > available" value.
+
+### Changed
+- Installation is restricted to `https://github.com/djomaster/TigerScale-v3-TigerPOD-3.5B/releases/download/` and refuses a missing SHA-256, in the screen, the local `/api/ota/update` and `otaApply()` itself.
+- No automatic update check; the owner decides when to look.
+- The Firestore `ota_update` command is refused.
+- The boot screen shows `V3 v3.13.0 - POD v1.1.0`.
+
+### Notes
+- Scales on 3.13.0-pod.1.0.0 have no over-the-air updater: they need one more USB flash (or the web installer) to reach this version.
+
 ## [3.13.0-pod.1.0.0] - 2026-11-15
 
 First release of the custom Waveshare 3.5B build. Full notes: `docs/release-notes/v3.13.0-pod.1.0.0.md`;

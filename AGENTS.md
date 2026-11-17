@@ -76,6 +76,7 @@ property: an empty input set is an error, not a pass.
   Keep a Changelog's (`Added` / `Changed` / `Fixed` / `Removed`), so the release
   entry is synthesised from it rather than re-derived from the diff. Describe the
   end state, not the journey.
+- **The updater installs this repository's own release assets only.** `otaUrlAllowed()` pins the URL to `TIGERSCALE_OTA_ASSET_BASE`, a 64-character SHA-256 is mandatory, there is no automatic check (`TIGERSCALE_OTA_AUTOCHECK` is 0) and the cloud `ota_update` command is refused. Never widen any of the four: this build's firmware must not be replaced by the official one.
 - **Never commit, tag or push without being asked.** Make the change, run the
   guards, report, and stop.
 - **Install the hooks once per clone**: `bash scripts/install-hooks.sh`.
