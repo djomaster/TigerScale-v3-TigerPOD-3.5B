@@ -1,6 +1,6 @@
 # v3.13 fork custom 3.5B — r8.3 : les deux parcours
 
-> Document historique (r8.3). Etat actuel : `CHANGES-djo-1.0.md`.
+> Document historique (r8.3). Etat actuel : `CHANGES-1.0.0.md`.
 
 Révision source du 14 novembre 2026, identité
 `V3.13-FORK-CUSTOM-3.5B-POD-r8.3`. La r8.2 reste conservée.

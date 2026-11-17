@@ -12,9 +12,9 @@ scaffold's placeholder text.
 
 ## [Unreleased]
 
-## [3.13.0-djo.1.0] - 2026-11-15
+## [3.13.0-pod.1.0.0] - 2026-11-15
 
-First release of the custom Waveshare 3.5B build. Full notes: `docs/release-notes/v3.13.0-djo.1.0.md`;
+First release of the custom Waveshare 3.5B build. Full notes: `docs/release-notes/v3.13.0-pod.1.0.0.md`;
 comparison with the official firmware: `docs/CHANGES-vs-official-3.13.0.md`.
 
 ### Added

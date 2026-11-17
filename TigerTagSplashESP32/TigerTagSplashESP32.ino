@@ -16,33 +16,33 @@
 //   TABLE OF CONTENTS                                     line range
 //   ---------------------------------------------------- -----------
 //   HARDWARE CONFIGURATION                                 339-  576
-//   OTA CONFIGURATION                                      577-  617
-//   FORWARD DECLARATIONS                                   618-  988
-//   WEIGHT ROUNDING                                        989- 1008
-//   GLOBAL OBJECTS                                        1009- 1868
-//   CONFIGURATION VARIABLES                               1869- 2325
-//   OLED DISPLAY                                          2326- 3143
-//   CLOUD PARSING                                         3144- 3158
-//   WIFI SETUP                                            3159- 7945
-//   LITTLEFS                                              7946- 8249
-//   FIREBASE AUTHENTICATION                               8250-10972
-//   WEBSOCKET                                            10973-10999
-//   CLOUD WORKER TASK  (non-blocking Firestore on core 0) 11000-11140
-//   UNIFIED WS FRAME BUILDER                             11141-11265
-//   WEIGHT FILTER HELPERS                                11266-11281
-//   POST-SEND STATE RESET (shared by all send paths)     11282-11302
-//   SHARED WEIGHT PUSH HANDLER (used by /api/weight and /api/push-weight) 11303-11409
-//   WEB SERVER                                           11410-12437
-//   CLOUD COMMUNICATION                                  12438-12624
-//   WEIGH WORKFLOW  (IDLE → SCANNING → STABLE_WAIT → SENDING) 12625-13162
-//   mDNS                                                 13163-13200
-//   SCALE                                                13201-13406
-//   ES8311 codec beep (I2S slave mode, Wire I2C @ 0x18)  13407-13532
-//   RFID                                                 13533-15717
-//   OTA — Over-the-air firmware + filesystem update    15718-16131
-//   LVGL bridge + main weigh screen                      16132-17040
-//   Remote live view: the screen out, taps back in       17041-17908
-//   SETUP & LOOP                                         17909-18947
+//   OTA CONFIGURATION                                      577-  618
+//   FORWARD DECLARATIONS                                   619-  989
+//   WEIGHT ROUNDING                                        990- 1009
+//   GLOBAL OBJECTS                                        1010- 1869
+//   CONFIGURATION VARIABLES                               1870- 2326
+//   OLED DISPLAY                                          2327- 3144
+//   CLOUD PARSING                                         3145- 3159
+//   WIFI SETUP                                            3160- 7946
+//   LITTLEFS                                              7947- 8250
+//   FIREBASE AUTHENTICATION                               8251-10973
+//   WEBSOCKET                                            10974-11000
+//   CLOUD WORKER TASK  (non-blocking Firestore on core 0) 11001-11141
+//   UNIFIED WS FRAME BUILDER                             11142-11266
+//   WEIGHT FILTER HELPERS                                11267-11282
+//   POST-SEND STATE RESET (shared by all send paths)     11283-11303
+//   SHARED WEIGHT PUSH HANDLER (used by /api/weight and /api/push-weight) 11304-11410
+//   WEB SERVER                                           11411-12438
+//   CLOUD COMMUNICATION                                  12439-12625
+//   WEIGH WORKFLOW  (IDLE → SCANNING → STABLE_WAIT → SENDING) 12626-13163
+//   mDNS                                                 13164-13201
+//   SCALE                                                13202-13407
+//   ES8311 codec beep (I2S slave mode, Wire I2C @ 0x18)  13408-13533
+//   RFID                                                 13534-15718
+//   OTA — Over-the-air firmware + filesystem update    15719-16132
+//   LVGL bridge + main weigh screen                      16133-17041
+//   Remote live view: the screen out, taps back in       17042-17909
+//   SETUP & LOOP                                         17910-18948
 //
 //   To regenerate:  bash scripts/update_toc.sh
 // --- TOC END -----------------------------------------------
@@ -579,8 +579,9 @@ const char* TIGERTAG_FIREBASE_WEB_API_KEY = "AIzaSyCkxPTs_Cv0KVLqsZj-UKWWqIY0Otf
 
 // Embedded build identity — exposed via /api/status and the heartbeat so the
 // app/Studio can compare against the latest published version.json.
-#define TIGERSCALE_FW_VERSION  "3.13.0-djo.1.0"
-#define TIGERSCALE_CUSTOM_BUILD "3.13.0-djo.1.0+fork3.11+3.5B+POD"
+#define TIGERSCALE_FW_VERSION  "3.13.0-pod.1.0.0"
+#define TIGERSCALE_VERSION_LABEL "V3 v3.13.0 - POD v1.0.0"
+#define TIGERSCALE_CUSTOM_BUILD "3.13.0-pod.1.0.0+fork3.11+3.5B+POD"
 static bool gPodPhysicalOnly = false;
 static bool gPodWriteAllowed = false;
 static void runPodTest();
@@ -2483,7 +2484,7 @@ static void bootProgress(uint8_t pct, const char* status) {
         lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 100);
 
         lv_obj_t *version = lv_label_create(lvBootScreen);
-        lv_label_set_text(version, "v" TIGERSCALE_FW_VERSION " custom 3.5B POD");
+        lv_label_set_text(version, TIGERSCALE_VERSION_LABEL);
         lv_obj_set_style_text_color(version, LVCOL_FAINT, 0);
         lv_obj_align(version, LV_ALIGN_TOP_MID, 0, 138);
 

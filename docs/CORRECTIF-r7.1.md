@@ -1,6 +1,6 @@
 # Correctif r7.1
 
-> Document historique (r7.1). Etat actuel : `CHANGES-djo-1.0.md`.
+> Document historique (r7.1). Etat actuel : `CHANGES-1.0.0.md`.
 
 Le journal fourni montre une restauration réussie, suivie d’une vérification
 des deux tags et de l’inventaire. Il ne montre pas un nouvel encodage de bobine.

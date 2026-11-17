@@ -1,6 +1,6 @@
 # TigerScale 3.5B — TigerPOD Inventaire r7
 
-> Document historique (r7). Etat actuel : `CHANGES-djo-1.0.md`.
+> Document historique (r7). Etat actuel : `CHANGES-1.0.0.md`.
 
 Version source expérimentale du 12 novembre 2026, issue de la r6 custom validée
 sur votre balance. Identité au démarrage :

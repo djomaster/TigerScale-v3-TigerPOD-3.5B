@@ -1,6 +1,6 @@
 # v3.13 fork custom — r8.1, carte 3.5B
 
-> Document historique (r8.1). Etat actuel : `CHANGES-djo-1.0.md`.
+> Document historique (r8.1). Etat actuel : `CHANGES-1.0.0.md`.
 
 Version source du 14 novembre 2026, issue exclusivement de la r8 custom.
 Identité complète : `V3.13-FORK-CUSTOM-3.5B-POD-r8.1`.

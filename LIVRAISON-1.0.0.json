@@ -1,5 +1,5 @@
 {
-  "identity": "3.13.0-djo.1.0+fork3.11+3.5B+POD",
+  "identity": "3.13.0-pod.1.0.0+fork3.11+3.5B+POD",
   "board": "Waveshare ESP32-S3-Touch-LCD-3.5B",
   "environment": "esp32s3_hsu_b",
   "esp32_compiled": false,
@@ -20,7 +20,7 @@
     "TigerTagSplashESP32/ui_icons.h",
     "WHATSNEW.md",
     "WORKLOG.md",
-    "docs/CHANGES-djo-1.0.md",
+    "docs/CHANGES-1.0.0.md",
     "docs/CHANGES-vs-official-3.13.0.md",
     "docs/CUSTOM-3.5B.md",
     "docs/FIRMWARE.md",

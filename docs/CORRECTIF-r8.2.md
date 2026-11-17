@@ -1,6 +1,6 @@
 # v3.13 fork custom 3.5B — r8.2 : reconnaissance accélérée
 
-> Document historique (r8.2). Etat actuel : `CHANGES-djo-1.0.md`.
+> Document historique (r8.2). Etat actuel : `CHANGES-1.0.0.md`.
 
 Cette révision du 14 novembre 2026 conserve la r8.1, la pesée, la reconnaissance
 en arrière-plan et l'obligation de deux tags distincts pour encoder une paire.

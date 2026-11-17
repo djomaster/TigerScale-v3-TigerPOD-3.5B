@@ -2,7 +2,7 @@
 
 Project: **TigerScale-V3-TigerPOD+**. A fork of https://github.com/TigerTag-Project/Tiger-Scale-V3 and of https://github.com/ijord/Tiger-Scale-V3.
 
-Firmware identity: `3.13.0-djo.1.0` (build `3.13.0-djo.1.0+fork3.11+3.5B+POD`).
+Firmware identity: `3.13.0-pod.1.0.0` (build `3.13.0-pod.1.0.0+fork3.11+3.5B+POD`).
 
 This build is not an upstream rebase. It has three layers:
 
@@ -25,7 +25,7 @@ Status: sources only. No ESP32 build, flash or bench test was run for this relea
 | Over-the-air update | enabled | every network install path fails closed; Update row hidden in Settings |
 | Interface | stock LVGL layout | redesigned weigh screen and TigerPOD home, new palette |
 | Memory handling | stock | one shared TLS session, one worker task, `[MEM]` journal, memory gates |
-| Version identity | `3.13.0` | `3.13.0-djo.1.0` |
+| Version identity | `3.13.0` | `3.13.0-pod.1.0.0` |
 
 ## 1. Hardware scope and build
 
@@ -100,8 +100,8 @@ Status: sources only. No ESP32 build, flash or bench test was run for this relea
 
 - Added tests: `test-pod-cloud`, `test-pod-inventory`, `test-pod-linked`, `test-pod-discovery`, `test-pod-transport`, `test-pod-uart`, `test-pod-ui`, `test-custom-r86`, `test-custom-power`, `test-rfid-313`, `test-inventory`, `test-picker`, `test-zero`, `test-ino-prototypes`.
 - Added `scripts/make-ui-icons.py` and `svg/ui/*.svg` for the interface icons; VS Code / PlatformIO workflow documented in `docs/CUSTOM-3.5B.md`.
-- `check-llms-txt.py` now accepts a version suffix such as `-djo.1.0`.
-- Per-revision notes live in `docs/` (CUSTOM-3.5B, RFID-3.13-PORT, POD-INVENTORY, CHANGES-djo-1.0 and the older correction notes), plus `SHA256-SOURCES.json` for source hashes.
+- Version scheme: `<official base>-pod.<POD version>`, shown as "V3 v3.13.0 - POD v1.0.0". The base follows the official firmware (3.13.0); the POD version is this fork's own and starts at 1.0.0.
+- Per-revision notes live in `docs/` (CUSTOM-3.5B, RFID-3.13-PORT, POD-INVENTORY, CHANGES-1.0.0 and the older correction notes), plus `SHA256-SOURCES.json` for source hashes.
 
 ## 11. Not carried over, or unchecked
 

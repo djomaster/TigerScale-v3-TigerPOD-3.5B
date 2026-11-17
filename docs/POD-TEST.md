@@ -1,6 +1,6 @@
 # TigerScale + TigerPOD TEST r6 — Waveshare 3.5B seulement
 
-> Document historique (r6). Etat actuel : `CHANGES-djo-1.0.md` et `CUSTOM-3.5B.md`.
+> Document historique (r6). Etat actuel : `CHANGES-1.0.0.md` et `CUSTOM-3.5B.md`.
 
 ## Base identifiée et sauvegardée
 

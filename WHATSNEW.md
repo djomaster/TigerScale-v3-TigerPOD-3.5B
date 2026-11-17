@@ -3,11 +3,11 @@
 The short version of every release, newest first — one scroll, no jargon.
 The full story for each version lives in [docs/release-notes/](docs/release-notes/).
 
-## v3.13.0-djo.1.0 — the custom 3.5B edition
+## v3.13.0-pod.1.0.0 — the custom 3.5B edition
 
 A new look from the design mockups, a TigerPOD menu that speaks your scale's language, native Bambu Lab
 tags that show their spool, and faster battery charging. Update over USB only for now.
-[Full notes](docs/release-notes/v3.13.0-djo.1.0.md)
+[Full notes](docs/release-notes/v3.13.0-pod.1.0.0.md)
 
 ## v3.4.0 — updates you can trust at a glance
 

@@ -261,7 +261,7 @@ log lives in git history and the synthesised entry lives in the changelog.
 - Memory admission checks, stage/heap/stack diagnostics and reset reason; native
   tests for legacy journal compatibility, allocation failures, retry recovery,
   actual LVGL buttons and custom OTA/memory gates (`scripts/test-*.py`).
-- Source-only installation, test and rollback guide (`docs/CHANGES-djo-1.0.md`),
+- Source-only installation, test and rollback guide (`docs/CHANGES-1.0.0.md`),
   README/release identity updates and inclusion of the custom native test in
   `scripts/verify.sh`. Hardware reboot cause remains unproven.
 

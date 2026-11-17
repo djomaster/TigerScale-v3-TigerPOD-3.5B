@@ -2,7 +2,7 @@
 
 Building and flashing TigerScale V3 firmware.
 
-> **Custom 3.5B build (3.13.0-djo.1.0):** open the folder holding `platformio.ini` in VS Code with the PlatformIO IDE extension; the only environment is `esp32s3_hsu_b`. Use `Upload` and `Upload Filesystem Image`, or `bash scripts/flash.sh --env esp32s3_hsu_b --fs`. See `docs/CUSTOM-3.5B.md`.
+> **Custom 3.5B build (3.13.0-pod.1.0.0):** open the folder holding `platformio.ini` in VS Code with the PlatformIO IDE extension; the only environment is `esp32s3_hsu_b`. Use `Upload` and `Upload Filesystem Image`, or `bash scripts/flash.sh --env esp32s3_hsu_b --fs`. See `docs/CUSTOM-3.5B.md`.
 
 ## Requirements
 

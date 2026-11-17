@@ -1,6 +1,6 @@
 # TigerScale-V3-TigerPOD+
 
-> **TigerScale-V3-TigerPOD+ 3.13.0-djo.1.0 — first release (sources only).**
+> **TigerScale V3 v3.13.0 - POD v1.0.0 — first release (sources only).**
 > A custom firmware for the **Waveshare ESP32-S3-Touch-LCD-3.5B** with two PN532 readers in HSU mode.
 
 ## Fork notice
@@ -24,7 +24,7 @@ Compared with the official 3.13.0 firmware (full list in [`docs/CHANGES-vs-offic
 - **Scope**: only `esp32s3_hsu_b` is supported. Over-the-air update is disabled; install over USB.
 - No ESP32 bench validation has been run for this release.
 
-More: [`docs/CHANGES-djo-1.0.md`](docs/CHANGES-djo-1.0.md) (revision notes and test protocol, French), [`docs/CUSTOM-3.5B.md`](docs/CUSTOM-3.5B.md) (install and workflow), [`docs/RFID-3.13-PORT.md`](docs/RFID-3.13-PORT.md). The older `CORRECTIF-r8.x`, `POD-INVENTORY-r7/r8` and `POD-TEST` notes are historical. The upstream descriptions below also discuss boards and transports unsupported here.
+More: [`docs/CHANGES-1.0.0.md`](docs/CHANGES-1.0.0.md) (revision notes and test protocol, French), [`docs/CUSTOM-3.5B.md`](docs/CUSTOM-3.5B.md) (install and workflow), [`docs/RFID-3.13-PORT.md`](docs/RFID-3.13-PORT.md). The older `CORRECTIF-r8.x`, `POD-INVENTORY-r7/r8` and `POD-TEST` notes are historical. The upstream descriptions below also discuss boards and transports unsupported here.
 
 ---
 

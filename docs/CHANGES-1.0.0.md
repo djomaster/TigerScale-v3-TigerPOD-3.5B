@@ -1,7 +1,7 @@
 # v3.13 fork custom 3.5B — 1.0
 
 Révision source du 15 novembre 2026, identité
-`3.13.0-djo.1.0+fork3.11+3.5B+POD`, version affichée `v3.13.0-djo.1.0 custom 3.5B POD`.
+`3.13.0-pod.1.0.0+fork3.11+3.5B+POD`, version affichée `V3 v3.13.0 - POD v1.0.0`.
 Base : copie de la r8.3 custom, sans modification des livraisons précédentes.
 Ce firmware reste le fork historique 3.11 avec le port RFID 3.13 et les ajouts
 custom ; il ne s'agit pas d'un remplacement par le firmware public 3.13.

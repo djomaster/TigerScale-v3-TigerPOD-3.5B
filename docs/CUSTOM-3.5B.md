@@ -1,4 +1,4 @@
-# TigerScale-V3-TigerPOD+ 3.13.0-djo.1.0 - Waveshare 3.5B
+# TigerScale-V3-TigerPOD+ - V3 v3.13.0 - POD v1.0.0 - Waveshare 3.5B
 
 Cette copie inclut le portage RFID de l'officielle 3.13.0. Lire aussi
 [les changements RFID et la migration](RFID-3.13-PORT.md).
@@ -11,9 +11,9 @@ comme references du fork parent, sans support dans cette edition.
 
 ## Interface et TigerPOD (1.0)
 
-Version `3.13.0-djo.1.0` : interface refaite d'apres les maquettes, menu TigerPOD traduit dans les 11 langues,
+Version `3.13.0-pod.1.0.0` : interface refaite d'apres les maquettes, menu TigerPOD traduit dans les 11 langues,
 icones des lecteurs et logo Tiger System generes dans `ui_icons.h`. Details, protocole d'essai et retour arriere :
-[CHANGES-djo-1.0.md](CHANGES-djo-1.0.md) ; comparaison avec l'officielle :
+[CHANGES-1.0.0.md](CHANGES-1.0.0.md) ; comparaison avec l'officielle :
 [CHANGES-vs-official-3.13.0.md](CHANGES-vs-official-3.13.0.md). La mise a jour en ligne est desactivee dans cette edition.
 
 ## Batterie et veille

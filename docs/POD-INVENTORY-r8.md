@@ -1,6 +1,6 @@
 # TigerScale 3.5B — TigerPOD Inventaire r8
 
-> Document historique (r8). Etat actuel : `CHANGES-djo-1.0.md`.
+> Document historique (r8). Etat actuel : `CHANGES-1.0.0.md`.
 
 Prototype source du 13 novembre 2026. Identité :
 `V3Plus-3.11.0-3.5B-RFID-3.13-POD-INVENTORY-r8`.
