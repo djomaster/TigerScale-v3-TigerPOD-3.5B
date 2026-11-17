@@ -1,5 +1,7 @@
 # Changes compared with the official TigerScale V3 3.13.0
 
+Project: **TigerScale-V3-TigerPOD+**. A fork of https://github.com/TigerTag-Project/Tiger-Scale-V3 and of https://github.com/ijord/Tiger-Scale-V3.
+
 Firmware identity: `3.13.0-djo.1.0` (build `3.13.0-djo.1.0+fork3.11+3.5B+POD`).
 
 This build is not an upstream rebase. It has three layers:

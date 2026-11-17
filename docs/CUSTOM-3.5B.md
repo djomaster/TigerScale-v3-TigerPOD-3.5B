@@ -1,4 +1,4 @@
-# TigerScale V3+ 3.11.0 custom - Waveshare 3.5B
+# TigerScale-V3-TigerPOD+ 3.13.0-djo.1.0 - Waveshare 3.5B
 
 Cette copie inclut le portage RFID de l'officielle 3.13.0. Lire aussi
 [les changements RFID et la migration](RFID-3.13-PORT.md).

@@ -1,4 +1,4 @@
-# TigerScale v3.13 fork custom — 1.0
+# TigerScale-V3-TigerPOD+ 3.13.0-djo.1.0
 
 > Open-source firmware for a connected filament scale. A 3D-printing filament spool
 > carrying TigerTag or supported original Bambu tags is placed on the platform; the scale reads the tag,
@@ -24,7 +24,8 @@ MIT licensed.
 Personal fork maintained by djomaster (Waveshare 3.5B only). It combines the TigerTag Project's official 3.13.0 firmware,
 the ijord V3+ 3.11.0 fork and TigerPOD tag management:
 https://github.com/djomaster/TigerScale-v3-TigerPOD-3.5B
-Official firmware: https://github.com/TigerTag-Project/Tiger-Scale-V3
+This is a fork of https://github.com/TigerTag-Project/Tiger-Scale-V3 (official firmware)
+This is a fork of https://github.com/ijord/Tiger-Scale-V3 (V3+ contributor fork)
 
 The sole environment is `esp32s3_hsu_b`. Inherited documentation for other
 hardware describes the parent fork, not this custom edition. See

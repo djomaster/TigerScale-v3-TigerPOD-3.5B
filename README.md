@@ -1,18 +1,32 @@
-> **TigerScale 3.13.0-djo.1.0 — first release of the custom 3.5B build (sources only).**
-> Personal build for the **Waveshare ESP32-S3-Touch-LCD-3.5B** with two PN532 readers in HSU mode,
-> built on the official 3.13.0 firmware, the 3.11.0 fork's native Bambu Lab tag support, quick battery
-> charging, RFID reader sleep with the screen, and TigerPOD tag management.
->
-> - What changed compared with the official firmware: [`docs/CHANGES-vs-official-3.13.0.md`](docs/CHANGES-vs-official-3.13.0.md)
-> - This revision's notes and test protocol (French): [`docs/CHANGES-djo-1.0.md`](docs/CHANGES-djo-1.0.md)
-> - Install, VS Code and PlatformIO workflow, limits: [`docs/CUSTOM-3.5B.md`](docs/CUSTOM-3.5B.md)
-> - RFID changes ported from the official 3.12 / 3.13: [`docs/RFID-3.13-PORT.md`](docs/RFID-3.13-PORT.md)
->
-> Only `esp32s3_hsu_b` is supported. Over-the-air update is disabled in this build; install over USB
-> (PlatformIO `Upload` and `Upload Filesystem Image` in VS Code keep Wi-Fi, account and calibration).
-> No ESP32 build or bench validation has been run for this release.
-> The older revision notes (`CORRECTIF-r8.x`, `POD-INVENTORY-r7/r8`, `POD-TEST`) are historical.
-> The parent-fork descriptions below also discuss boards and transports unsupported here.
+# TigerScale-V3-TigerPOD+
+
+> **TigerScale-V3-TigerPOD+ 3.13.0-djo.1.0 — first release (sources only).**
+> A custom firmware for the **Waveshare ESP32-S3-Touch-LCD-3.5B** with two PN532 readers in HSU mode.
+
+## Fork notice
+
+- This is a fork of https://github.com/TigerTag-Project/Tiger-Scale-V3 (the official TigerScale V3 firmware, here rebased on its 3.13.0 reference).
+- This is a fork of https://github.com/ijord/Tiger-Scale-V3 (the contributor fork "V3+", 3.11.0), from which the native Bambu Lab tag support, tag programming and the zero function descend.
+- Project name: **TigerScale-V3-TigerPOD+**. The GitHub repository is `djomaster/TigerScale-v3-TigerPOD-3.5B`, because GitHub repository names cannot contain a `+`.
+- Licence: MIT, unchanged. The original copyright notice is kept in [`LICENSE`](LICENSE).
+
+## What this fork changes
+
+Compared with the official 3.13.0 firmware (full list in [`docs/CHANGES-vs-official-3.13.0.md`](docs/CHANGES-vs-official-3.13.0.md)):
+
+- **TigerPOD** tag management menu: read tags, new pair, update, verify against the inventory, resume, format, restore. Verify names the matching inventory spool and its remaining weight.
+- **Native Bambu Lab tags** (from the ijord fork, extended): read, linked to an inventory spool, weight synced.
+- **Tag programming and erasing**, and a **zero** function (from the ijord fork).
+- **RFID**: the work of the official 3.12 / 3.13 ported back, reader PowerDown with HSU wake-up when the screen sleeps.
+- **Power**: battery charge target 1000 mA, VBUS limit 1500 mA.
+- **Interface**: redesigned weigh screen and TigerPOD home, new icons and the Tiger System logo, 314 translation keys in 11 languages.
+- **Robustness**: one shared TLS session, one worker task, memory journal and gates.
+- **Scope**: only `esp32s3_hsu_b` is supported. Over-the-air update is disabled; install over USB.
+- No ESP32 bench validation has been run for this release.
+
+More: [`docs/CHANGES-djo-1.0.md`](docs/CHANGES-djo-1.0.md) (revision notes and test protocol, French), [`docs/CUSTOM-3.5B.md`](docs/CUSTOM-3.5B.md) (install and workflow), [`docs/RFID-3.13-PORT.md`](docs/RFID-3.13-PORT.md). The older `CORRECTIF-r8.x`, `POD-INVENTORY-r7/r8` and `POD-TEST` notes are historical. The upstream descriptions below also discuss boards and transports unsupported here.
+
+---
 
 <p align="center">
   <picture>
@@ -22,13 +36,13 @@
   </picture>
 </p>
 
-<h1 align="center">TigerScale V3+</h1>
+<h1 align="center">TigerScale-V3-TigerPOD+</h1>
 
 <p align="center">
-  <strong>This is a fork of https://github.com/TigerTag-Project/Tiger-Scale-V3<br>
+  <strong>Based on the ijord V3+ fork of https://github.com/TigerTag-Project/Tiger-Scale-V3<br>
   This firmware adds many features and fixes not in the official firmware.</strong><br><br>
 
-  ## Added Features
+  ## Features inherited from the ijord fork
 
 - **Write TigerTags** Put blank NTAG21X tags on both sides of your spool. When you drop this spool in the TigerScale, it will see that it is a blank tag and will scan your inventory for any spools which are not already tagged. You can then use the on-screen UI to match the spool and inventory slot. After that, the tag is written to be a standard TigerTag. 
 - **Read Bambu RFID tags** Drop a Bambu tagged spool in, and it will look up what it is and add it to your inventory. After that it will track that specific spool
@@ -55,9 +69,4 @@
   </a>
 </p>
 
-<p align="center">
-  <a href="https://cad.onshape.com/documents/ffd8ea5573c21ddec7180c6f">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Onshape_logo_full.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" alt="Onshape" width="400">
-    Remix the design in Onshape
-  </a>
-</p>
+
