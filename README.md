@@ -46,7 +46,6 @@ More: [`docs/CHANGES-1.0.0.md`](docs/CHANGES-1.0.0.md) (revision notes and test 
 
 - **Write TigerTags** Put blank NTAG21X tags on both sides of your spool. When you drop this spool in the TigerScale, it will see that it is a blank tag and will scan your inventory for any spools which are not already tagged. You can then use the on-screen UI to match the spool and inventory slot. After that, the tag is written to be a standard TigerTag. 
 - **Read Bambu RFID tags** Drop a Bambu tagged spool in, and it will look up what it is and add it to your inventory. After that it will track that specific spool
-- **Support for the JC3248W535C** A 3.5" display board which is highly comparable to the Waveshare.
 - **Support for either polarity of load scale wiring**
 - Improved auto Tare
 - Improved scale filtering
