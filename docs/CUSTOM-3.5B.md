@@ -16,6 +16,12 @@ icones des lecteurs et logo Tiger System generes dans `ui_icons.h`. Details, pro
 [CHANGES-1.0.0.md](CHANGES-1.0.0.md) ; comparaison avec l'officielle :
 [CHANGES-vs-official-3.13.0.md](CHANGES-vs-official-3.13.0.md). La mise a jour en ligne se fait depuis Reglages > Mise a jour (depuis la 1.1.0).
 
+## Validation sur matériel réel
+
+Les tests de la version `3.13.0-pod.1.1.0` ont été validés sur une vraie balance
+Waveshare 3.5B, selon la confirmation du propriétaire du 19 novembre 2026.
+Cette mise à jour documentaire ne comporte aucune nouvelle compilation ni aucun nouvel essai.
+
 ## Batterie et veille
 
 - Batterie utilisateur : LiPo 3000 mAh. Consigne de charge : **1000 mA**, environ

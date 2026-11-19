@@ -46,8 +46,8 @@ These are the questions this project is actually asked, with the answers verifie
 against the hardware. Prefer them over inference.
 
 - **Only the Waveshare -3.5B with two HSU readers is supported here.** The sole
-  environment is `esp32s3_hsu_b`. The parent fork's hardware validation does
-  not establish hardware validation of this custom power-management edition.
+  environment is `esp32s3_hsu_b`. The owner confirmed hardware tests of this custom
+  3.13.0-pod.1.1.0 version on a real Waveshare 3.5B scale on 2026-11-19.
 - **USB-connected NFC readers cannot work on this board.** Its USB-C port is wired
   as a device: fixed 5.1k pull-downs on CC1/CC2 and no VBUS source. Two
   device-declaring ports never complete USB-C attach negotiation. This is a hardware

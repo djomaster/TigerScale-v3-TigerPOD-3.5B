@@ -10,7 +10,7 @@ This build is not an upstream rebase. It has three layers:
 2. **Contributor fork 3.11.0** (ijord, "V3+") — native Bambu Lab tag reading, tag programming and erasing, and a zero function. It is the code line this build actually descends from.
 3. **Custom work** — fast battery charging, RFID reader sleep with the screen, the RFID work ported back from official 3.13.0, TigerPOD, and the new interface.
 
-Status: sources only. No ESP32 build, flash or bench test was run for this release. Host tests (simulated peripherals) pass. Statements below come from the diff against the official folder and from the revision notes in `docs/`; where something is an inference, it says so.
+Status: current version 3.13.0-pod.1.1.0. Hardware tests for 3.13.0-pod.1.1.0 were confirmed as validated on a real Waveshare 3.5B scale by the owner on 2026-11-19. This records the owner’s confirmation; no additional tests were run for this documentation update. Statements below come from the diff against the official folder and from the revision notes in `docs/`; where something is an inference, it says so.
 
 ## Summary
 

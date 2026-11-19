@@ -1,5 +1,7 @@
 # v3.13 fork custom 3.5B — 1.0
 
+> Historical notes: the OTA-disabled statements below describe earlier versions. Since `3.13.0-pod.1.1.0`, Settings > Update offers manual updates from this repository’s release assets only, with mandatory SHA-256 verification, no automatic check and no cloud-triggered installation. The owner confirmed hardware tests of the current version on a real Waveshare 3.5B on 2026-11-19; earlier test limitations below remain historical.
+
 Révision source du 15 novembre 2026, identité
 `3.13.0-pod.1.1.0+fork3.11+3.5B+POD` (1.0.0 : `3.13.0-pod.1.0.0`), version affichée `V3 v3.13.0 - POD v1.1.0`.
 Base : copie de la r8.3 custom, sans modification des livraisons précédentes.

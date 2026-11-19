@@ -22,7 +22,7 @@ Compared with the official 3.13.0 firmware (full list in [`docs/CHANGES-vs-offic
 - **Interface**: redesigned weigh screen and TigerPOD home, new icons and the Tiger System logo, 314 translation keys in 11 languages.
 - **Robustness**: one shared TLS session, one worker task, memory journal and gates.
 - **Scope**: only `esp32s3_hsu_b` is supported. Updates: first install over USB (or the web installer), then over the air from Settings > Update, which installs only this repository's own release assets, checked against their SHA-256. There is no automatic check.
-- No ESP32 bench validation has been run for this release.
+- Hardware tests for 3.13.0-pod.1.1.0 were confirmed as validated on a real Waveshare 3.5B scale by the owner on 2026-11-19. This records the owner’s confirmation; no additional tests were run for this documentation update.
 
 More: [`docs/CHANGES-1.0.0.md`](docs/CHANGES-1.0.0.md) (revision notes and test protocol, French), [`docs/CUSTOM-3.5B.md`](docs/CUSTOM-3.5B.md) (install and workflow), [`docs/RFID-3.13-PORT.md`](docs/RFID-3.13-PORT.md). The older `CORRECTIF-r8.x`, `POD-INVENTORY-r7/r8` and `POD-TEST` notes are historical. The upstream descriptions below also discuss boards and transports unsupported here.
 

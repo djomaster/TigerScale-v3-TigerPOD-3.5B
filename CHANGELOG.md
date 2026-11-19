@@ -27,6 +27,8 @@ Over-the-air update is back, on this fork's own channel. Full notes: `docs/relea
 - The boot screen shows `V3 v3.13.0 - POD v1.1.0`.
 
 ### Notes
+
+- The owner confirmed hardware tests of 3.13.0-pod.1.1.0 on a real Waveshare 3.5B on 2026-11-19. No additional tests were run for this documentation update.
 - Scales on 3.13.0-pod.1.0.0 have no over-the-air updater: they need one more USB flash (or the web installer) to reach this version.
 
 ## [3.13.0-pod.1.0.0] - 2026-11-15
