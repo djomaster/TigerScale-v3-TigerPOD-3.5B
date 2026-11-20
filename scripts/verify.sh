@@ -140,7 +140,7 @@ fi
 
 if [ "$QUICK" -eq 0 ]; then
   if [ "$ALL" -eq 1 ]; then
-    ENVS="esp32s3_hsu_b"
+    ENVS="esp32s3_hsu_b esp32s3_hsu"
   else
     ENVS="esp32s3_hsu_b"
   fi

@@ -72,7 +72,7 @@ env:
   # what every scale in the field is. make-manifest.py refuses anything else.
   OTA_ENV: esp32s3_hsu_b
   # Additional boards, each with its own entry in boards[].
-  OTHER_BOARDS: ""
+  OTHER_BOARDS: "3.5:esp32s3_hsu"
 
 jobs:
   redeploy:

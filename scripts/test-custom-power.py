@@ -129,15 +129,15 @@ def main():
     guard = []
     with inventory.SOURCE.open(encoding="utf-8") as source:
         for line in source:
-            if line.startswith("#if TS_BOARD_NONB || TS_BOARD_JC3248"):
+            if line.startswith("#if TS_BOARD_JC3248 || !RFID_TRANSPORT_HSU"):
                 guard.append(line)
             elif guard:
                 guard.append(line)
                 if line.startswith("#endif"):
                     break
     if not guard:
-        raise SystemExit("missing 3.5B-only compile guard")
-    for nonb, jc, hsu, i2c, allowed in [(0, 0, 1, 0, True), (1, 0, 1, 0, False),
+        raise SystemExit("missing board/transport compile guard")
+    for nonb, jc, hsu, i2c, allowed in [(0, 0, 1, 0, True), (1, 0, 1, 0, True),
                                       (0, 1, 1, 0, False), (0, 0, 0, 0, False),
                                       (0, 0, 1, 1, False)]:
         flags = [f"-DTS_BOARD_NONB={nonb}", f"-DTS_BOARD_JC3248={jc}",

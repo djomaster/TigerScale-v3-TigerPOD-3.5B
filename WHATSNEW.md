@@ -3,6 +3,12 @@
 The short version of every release, newest first — one scroll, no jargon.
 The full story for each version lives in [docs/release-notes/](docs/release-notes/).
 
+## v3.13.0-pod.1.2.0 — the 3.5 without the B
+
+The Waveshare 3.5 without the B is supported again, with its own firmware in the web installer.
+It builds and passes the software tests but has not been tried on a real board yet.
+[Full notes](docs/release-notes/v3.13.0-pod.1.2.0.md)
+
 ## v3.13.0-pod.1.1.0 — updates over the air again
 
 Settings > Update works again, on this fork's own channel: it checks when you open it, installs the

@@ -364,9 +364,9 @@ uint8_t  gSoundTheme  = 0;    // 0=Beep 1=Double 2=Chime 3=Click
 #define TS_BOARD_JC3248 0
 #endif
 
-// This personal fork is supported only on the Waveshare -3.5B with HSU readers.
-#if TS_BOARD_NONB || TS_BOARD_JC3248 || !RFID_TRANSPORT_HSU || RFID_TRANSPORT_I2C
-#error "Custom build requires Waveshare ESP32-S3-Touch-LCD-3.5B and HSU PN532 readers"
+// This fork supports the Waveshare -3.5B and -3.5 (TS_BOARD_NONB) with HSU readers.
+#if TS_BOARD_JC3248 || !RFID_TRANSPORT_HSU || RFID_TRANSPORT_I2C
+#error "Custom build requires a Waveshare ESP32-S3-Touch-LCD-3.5 or 3.5B and HSU PN532 readers"
 #endif
 
 #if TS_BOARD_JC3248 && (TS_BOARD_NONB || !RFID_TRANSPORT_HSU || RFID_TRANSPORT_I2C)
@@ -579,9 +579,9 @@ const char* TIGERTAG_FIREBASE_WEB_API_KEY = "AIzaSyCkxPTs_Cv0KVLqsZj-UKWWqIY0Otf
 
 // Embedded build identity — exposed via /api/status and the heartbeat so the
 // app/Studio can compare against the latest published version.json.
-#define TIGERSCALE_FW_VERSION  "3.13.0-pod.1.1.0"
-#define TIGERSCALE_VERSION_LABEL "V3 v3.13.0 - POD v1.1.0"
-#define TIGERSCALE_CUSTOM_BUILD "3.13.0-pod.1.1.0+fork3.11+3.5B+POD"
+#define TIGERSCALE_FW_VERSION  "3.13.0-pod.1.2.0"
+#define TIGERSCALE_VERSION_LABEL "V3 v3.13.0 - POD v1.2.0"
+#define TIGERSCALE_CUSTOM_BUILD "3.13.0-pod.1.2.0+fork3.11+3.5B+POD"
 static bool gPodPhysicalOnly = false;
 static bool gPodWriteAllowed = false;
 static void runPodTest();

@@ -49,7 +49,7 @@ env:
   # a manifest if it is anything else. The -3.5 is served from boards["3.5"].
   OTA_ENV: esp32s3_hsu_b
   # Published to users, in the order the installer offers them.
-  PUBLISHED_ENVS: "esp32s3_hsu_b"
+  PUBLISHED_ENVS: "esp32s3_hsu_b esp32s3_hsu"
 
 jobs:
   build:
@@ -210,7 +210,7 @@ jobs:
         run: |
           # Guaranteed to exist — the "Release notes must exist" gate ran first.
           gh release create "$GITHUB_REF_NAME" dist/* \
-            --title "TigerScale V3+ v$VERSION" \
+            --title "TigerScale-V3-TigerPOD+ v$VERSION" \
             --notes-file "docs/release-notes/v$VERSION.md"
 
   # Publishing the page is NOT done here. pages.yml is the single thing in this

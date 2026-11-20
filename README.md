@@ -1,6 +1,6 @@
 # TigerScale-V3-TigerPOD+
 
-> **TigerScale V3 v3.13.0 - POD v1.1.0.**
+> **TigerScale V3 v3.13.0 - POD v1.2.0.**
 > A custom firmware for the **Waveshare ESP32-S3-Touch-LCD-3.5B** with two PN532 readers in HSU mode.
 
 ## Fork notice
@@ -21,7 +21,7 @@ Compared with the official 3.13.0 firmware (full list in [`docs/CHANGES-vs-offic
 - **Power**: battery charge target 1000 mA, VBUS limit 1500 mA.
 - **Interface**: redesigned weigh screen and TigerPOD home, new icons and the Tiger System logo, 314 translation keys in 11 languages.
 - **Robustness**: one shared TLS session, one worker task, memory journal and gates.
-- **Scope**: only `esp32s3_hsu_b` is supported. Updates: first install over USB (or the web installer), then over the air from Settings > Update, which installs only this repository's own release assets, checked against their SHA-256. There is no automatic check.
+- **Scope**: the Waveshare ESP32-S3-Touch-LCD-**3.5B** (`esp32s3_hsu_b`, bench-verified) and the **3.5** without the B (`esp32s3_hsu`, compiles, not bench-verified), both with two PN532 readers in HSU mode. Updates: first install over USB (or the web installer), then over the air from Settings > Update, which installs only this repository's own release assets, checked against their SHA-256. There is no automatic check.
 - Hardware tests for 3.13.0-pod.1.1.0 were confirmed as validated on a real Waveshare 3.5B scale by the owner on 2026-11-19. This records the owner’s confirmation; no additional tests were run for this documentation update.
 
 More: [`docs/CHANGES-1.0.0.md`](docs/CHANGES-1.0.0.md) (revision notes and test protocol, French), [`docs/CUSTOM-3.5B.md`](docs/CUSTOM-3.5B.md) (install and workflow), [`docs/RFID-3.13-PORT.md`](docs/RFID-3.13-PORT.md). The older `CORRECTIF-r8.x`, `POD-INVENTORY-r7/r8` and `POD-TEST` notes are historical. The upstream descriptions below also discuss boards and transports unsupported here.

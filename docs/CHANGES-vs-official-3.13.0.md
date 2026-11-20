@@ -2,7 +2,7 @@
 
 Project: **TigerScale-V3-TigerPOD+**. A fork of https://github.com/TigerTag-Project/Tiger-Scale-V3 and of https://github.com/ijord/Tiger-Scale-V3.
 
-Firmware identity: `3.13.0-pod.1.1.0` (build `3.13.0-pod.1.1.0+fork3.11+3.5B+POD`).
+Firmware identity: `3.13.0-pod.1.2.0` (build `3.13.0-pod.1.1.0+fork3.11+3.5B+POD`).
 
 This build is not an upstream rebase. It has three layers:
 
@@ -16,7 +16,7 @@ Status: current version 3.13.0-pod.1.1.0. Hardware tests for 3.13.0-pod.1.1.0 we
 
 | Area | Official 3.13.0 | This build |
 |------|-----------------|------------|
-| Boards / transports | 3.5B and 3.5, HSU / SPI / I2C builds | 3.5B only, 2 PN532 readers in HSU. Other boards and transports are refused at compile time |
+| Boards / transports | 3.5B and 3.5, HSU / SPI / I2C builds | 3.5B and 3.5, 2 PN532 readers in HSU. Guition and the SPI / I2C transports are refused at compile time |
 | Native Bambu Lab tags | not supported | read, linked to an inventory spool, weight synced, spool shown on the weigh screen |
 | Tag programming / erasing | not present | present (from the fork) |
 | TigerPOD tag management | not present | new menu: read, new pair, refresh, verify, resume, format, restore |
@@ -29,7 +29,7 @@ Status: current version 3.13.0-pod.1.1.0. Hardware tests for 3.13.0-pod.1.1.0 we
 
 ## 1. Hardware scope and build
 
-- Single supported environment: `esp32s3_hsu_b` (Waveshare ESP32-S3-Touch-LCD-3.5B, two PN532 over UART). The 3.5 (no B), Guition board and the SPI and I2C transports are rejected at compile time. Their branches stay in the source as inherited references, unsupported.
+- Supported environments: `esp32s3_hsu_b` (Waveshare ESP32-S3-Touch-LCD-3.5B, bench-verified) and `esp32s3_hsu` (the 3.5 without the B, added in 3.13.0-pod.1.2.0, compiles, not bench-verified), both with two PN532 over UART. The Guition board and the SPI and I2C transports are rejected at compile time. Their branches stay in the source as inherited references, unsupported.
 - `platformio.ini` reduced to that environment, with `-DARDUINO_LOOP_STACK_SIZE=32768` because POD journal parsing runs on the loop task and the default 8 KiB overflowed.
 - `include/lv_conf.h`: `LV_USE_LARGE_COORD` set to 1, because inventory rows can exceed the 8191 px small-coordinate limit.
 

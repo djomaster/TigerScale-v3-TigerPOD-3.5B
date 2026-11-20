@@ -12,6 +12,18 @@ scaffold's placeholder text.
 
 ## [Unreleased]
 
+## [3.13.0-pod.1.2.0] - 2026-11-20
+
+Support for the Waveshare ESP32-S3-Touch-LCD-3.5 without the B. Full notes: `docs/release-notes/v3.13.0-pod.1.2.0.md`.
+
+### Added
+- Environment `esp32s3_hsu` (`TS_BOARD_NONB=1`): same HSU wiring, ST7796 over SPI. The web installer offers it again, and every release now publishes both boards (`firmware-esp32s3_hsu_b.bin`, `firmware-esp32s3_hsu.bin`, `manifest-esp32s3_hsu.json`).
+- Over-the-air updates serve each board its own image: the 3.5B reads the flat keys, the 3.5 reads `boards["3.5"]`.
+
+### Notes
+- The -3.5 build compiles and passes the host tests but has not been run on a real -3.5 board. The Guition board and the SPI and I2C transports remain refused at compile time.
+- `verify.sh --all` now builds both environments.
+
 ## [3.13.0-pod.1.1.0] - 2026-11-16
 
 Over-the-air update is back, on this fork's own channel. Full notes: `docs/release-notes/v3.13.0-pod.1.1.0.md`.

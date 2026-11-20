@@ -1,4 +1,4 @@
-# TigerScale-V3-TigerPOD+ - V3 v3.13.0 - POD v1.1.0 - Waveshare 3.5B
+# TigerScale-V3-TigerPOD+ - V3 v3.13.0 - POD v1.2.0 - Waveshare 3.5B et 3.5
 
 Cette copie inclut le portage RFID de l'officielle 3.13.0. Lire aussi
 [les changements RFID et la migration](RFID-3.13-PORT.md).
@@ -11,10 +11,29 @@ comme references du fork parent, sans support dans cette edition.
 
 ## Interface et TigerPOD (1.0)
 
-Version `3.13.0-pod.1.1.0`. La 1.0.0 apportait : interface refaite d'apres les maquettes, menu TigerPOD traduit dans les 11 langues,
+Version `3.13.0-pod.1.2.0`. La 1.0.0 apportait : interface refaite d'apres les maquettes, menu TigerPOD traduit dans les 11 langues,
 icones des lecteurs et logo Tiger System generes dans `ui_icons.h`. Details, protocole d'essai et retour arriere :
 [CHANGES-1.0.0.md](CHANGES-1.0.0.md) ; comparaison avec l'officielle :
 [CHANGES-vs-official-3.13.0.md](CHANGES-vs-official-3.13.0.md). La mise a jour en ligne se fait depuis Reglages > Mise a jour (depuis la 1.1.0).
+
+## Choisir la carte (3.5B ou 3.5)
+
+Depuis la 1.2.0, deux environnements sont proposés. Se fier à la serigraphie de la carte :
+
+| Carte | Environnement | Etat |
+|-------|---------------|------|
+| Waveshare ESP32-S3-Touch-LCD-3.5**B** | `esp32s3_hsu_b` (par defaut) | verifiee sur banc |
+| Waveshare ESP32-S3-Touch-LCD-3.5 (sans B) | `esp32s3_hsu` | compile, non verifiee sur banc |
+
+```bash
+bash scripts/flash.sh --fs                    # 3.5B
+bash scripts/flash.sh --fs --env esp32s3_hsu  # 3.5 sans B
+```
+
+L'image d'une carte sur l'autre donne un ecran noir sans message : les deux cartes ont le meme
+cablage mais pas le meme controleur d'ecran (AXS15231B en QSPI sur la B, ST7796 en SPI sur l'autre).
+La mise a jour en ligne choisit toute seule la bonne image grace a l'identifiant de carte du
+manifeste (`3.5b` ou `3.5`).
 
 ## Validation sur matériel réel
 

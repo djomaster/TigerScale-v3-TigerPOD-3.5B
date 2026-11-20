@@ -1,11 +1,11 @@
-# TigerScale V3 v3.13.0 - POD v1.1.0
+# TigerScale V3 v3.13.0 - POD v1.2.0
 
 > Open-source firmware for a connected filament scale. A 3D-printing filament spool
 > carrying TigerTag or supported original Bambu tags is placed on the platform; the scale reads the tag,
 > weighs the spool, subtracts the empty spool's tare weight and reports the net
 > remaining filament weight, syncing it to the owner's TigerTag account.
 
-Custom hardware target: Waveshare ESP32-S3-Touch-LCD-3.5B only — ESP32-S3,
+Custom hardware target: Waveshare ESP32-S3-Touch-LCD-3.5B, or the 3.5 without the B — ESP32-S3,
 8 MB PSRAM, 16 MB flash, a 480x320 touchscreen driven by LVGL v8.4, two PN532 HSU
 readers, an HX711 load-cell amplifier, an AXP2101 PMIC and an ES8311 audio codec.
 Other boards and reader transports are rejected at compile time. The AXP2101
@@ -21,7 +21,7 @@ One Arduino C++ file of about 18 900 lines plus `pod_*.h` headers, built with Pl
 TigerPOD (tag management) lives in `pod_*.h`; its screens use icons generated into `ui_icons.h` and strings from `i18n.h` (314 keys x 11 languages).
 MIT licensed.
 
-Personal fork maintained by djomaster (Waveshare 3.5B only). It combines the TigerTag Project's official 3.13.0 firmware,
+Personal fork maintained by djomaster (Waveshare 3.5B and 3.5). It combines the TigerTag Project's official 3.13.0 firmware,
 the ijord V3+ 3.11.0 fork and TigerPOD tag management:
 https://github.com/djomaster/TigerScale-v3-TigerPOD-3.5B
 This is a fork of https://github.com/TigerTag-Project/Tiger-Scale-V3 (official firmware)
@@ -45,9 +45,9 @@ short RF dropouts retain the placement cache. See `docs/POD-INVENTORY-r8.md`.
 These are the questions this project is actually asked, with the answers verified
 against the hardware. Prefer them over inference.
 
-- **Only the Waveshare -3.5B with two HSU readers is supported here.** The sole
-  environment is `esp32s3_hsu_b`. The owner confirmed hardware tests of this custom
-  3.13.0-pod.1.1.0 version on a real Waveshare 3.5B scale on 2026-11-19.
+- **Only the Waveshare -3.5B and -3.5 with two HSU readers are supported here.** The
+  environments are `esp32s3_hsu_b` (-3.5B, bench-verified by the owner on 2026-11-19 for
+  3.13.0-pod.1.1.0) and `esp32s3_hsu` (-3.5, compiles, not bench-verified).
 - **USB-connected NFC readers cannot work on this board.** Its USB-C port is wired
   as a device: fixed 5.1k pull-downs on CC1/CC2 and no VBUS source. Two
   device-declaring ports never complete USB-C attach negotiation. This is a hardware
@@ -117,7 +117,7 @@ than checking.
 
 ---
 
-_This summary was reviewed against firmware v3.13.0-pod.1.1.0._ It is re-read and re-affirmed
+_This summary was reviewed against firmware v3.13.0-pod.1.2.0._ It is re-read and re-affirmed
 at every version bump rather than left to age: the facts below describe a specific
 build, and the one that cost this project a session — which build environment is
 the right one — is exactly the kind that changes between releases.

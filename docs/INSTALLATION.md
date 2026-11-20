@@ -52,8 +52,9 @@ Wiring diagrams for each: [HARDWARE.md](HARDWARE.md#nfc-wiring--pick-one-then-bu
 
 This installer serves **djomaster's TigerScale 3.5B edition**. It only works after a release has
 been published from the repository (see below); until then, install over USB with PlatformIO. This edition
-targets the Waveshare -3.5B with two HSU (UART) readers; the other boards listed by the inherited
-installer are not supported by this firmware.
+targets the Waveshare -3.5B and the -3.5 without the B, with two HSU (UART) readers; the Guition board listed
+by the inherited installer is not supported by this firmware. Pick the board by the silkscreen: a -3.5B image on
+a -3.5 (or the reverse) gives a black screen.
 
 Plug the board in, choose your board, click Install. It writes the bootloader,
 partition table, firmware and web UI in one go. Chrome, Edge or Opera on a desktop —
