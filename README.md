@@ -3,11 +3,19 @@
 > **TigerScale V3 v3.13.0 - POD v1.2.0.**
 > A custom firmware for the **Waveshare ESP32-S3-Touch-LCD-3.5B** with two PN532 readers in HSU mode.
 
+> [!IMPORTANT]
+> **Unofficial firmware.** TigerScale-V3-TigerPOD+ is an independent community fork. It is not the official
+> TigerScale firmware, and it is not affiliated with, endorsed by or supported by the TigerTag Project.
+> It installs from [its own page](https://djomaster.github.io/TigerScale-v3-TigerPOD-3.5B/) and its own releases,
+> and updates only from them. Please report problems with it here, not to the official project. The official
+> firmware is at https://github.com/TigerTag-Project/Tiger-Scale-V3.
+
 ## Fork notice
 
 - This is a fork of https://github.com/TigerTag-Project/Tiger-Scale-V3 (the official TigerScale V3 firmware, here rebased on its 3.13.0 reference).
 - This is a fork of https://github.com/ijord/Tiger-Scale-V3 (the contributor fork "V3+", 3.11.0), from which the native Bambu Lab tag support, tag programming and the zero function descend.
 - Project name: **TigerScale-V3-TigerPOD+**. The GitHub repository is `djomaster/TigerScale-v3-TigerPOD-3.5B`, because GitHub repository names cannot contain a `+`.
+- Status: unofficial. "TigerScale", "TigerTag" and "Tiger Studio" are trademarks of the TigerTag Project, named here only to say what this firmware is based on and compatible with ([trademark policy](TRADEMARK.md)).
 - Licence: MIT, unchanged. The original copyright notice is kept in [`LICENSE`](LICENSE).
 
 ## What this fork changes

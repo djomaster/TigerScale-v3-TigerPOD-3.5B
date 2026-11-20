@@ -21,7 +21,7 @@ One Arduino C++ file of about 18 900 lines plus `pod_*.h` headers, built with Pl
 TigerPOD (tag management) lives in `pod_*.h`; its screens use icons generated into `ui_icons.h` and strings from `i18n.h` (314 keys x 11 languages).
 MIT licensed.
 
-Personal fork maintained by djomaster (Waveshare 3.5B and 3.5). It combines the TigerTag Project's official 3.13.0 firmware,
+Unofficial community fork, not affiliated with or endorsed by the TigerTag Project. Maintained by djomaster (Waveshare 3.5B and 3.5). It combines the TigerTag Project's official 3.13.0 firmware,
 the ijord V3+ 3.11.0 fork and TigerPOD tag management:
 https://github.com/djomaster/TigerScale-v3-TigerPOD-3.5B
 This is a fork of https://github.com/TigerTag-Project/Tiger-Scale-V3 (official firmware)
