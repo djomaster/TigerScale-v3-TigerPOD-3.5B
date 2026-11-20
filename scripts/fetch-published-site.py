@@ -60,7 +60,7 @@ PAGES = "https://djomaster.github.io/TigerScale-v3-TigerPOD-3.5B"
 
 # Per published board. Kept in step with BOARDS in make-manifest.py; the check
 # at the end of this script fails if a manifest names a file that is not covered.
-ENVS = ["esp32s3_hsu_b"]
+ENVS = ["esp32s3_hsu_b", "esp32s3_hsu"]
 
 # Needed by the web installer, never by the OTA. Published as release assets from
 # v3.7.4 on; for anything older they exist only on the deployed site.

@@ -43,7 +43,7 @@ PAGES = "https://djomaster.github.io/TigerScale-v3-TigerPOD-3.5B"
 # field reads. Must match FLEET_ENV in make-manifest.py.
 OTA_ENV = "esp32s3_hsu_b"
 # Other boards have their own entries and must never receive the default image.
-OTHER_BOARDS = []
+OTHER_BOARDS = [("3.5", "esp32s3_hsu")]
 
 
 def get(url, cache_bust=False):
