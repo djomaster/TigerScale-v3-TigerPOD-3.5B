@@ -281,7 +281,7 @@ you want to watch; reach for the two requests above when you want to check.
 
 ## i18n
 
-`TigerTagSplashESP32/i18n.h` — **314 keys × 11 languages** (EN/PT/FR/ES/DE/ZH/IT/PL/PT-PT/RU/NL — Studio Manager's exact list).
+`TigerTagSplashESP32/i18n.h` — **317 keys × 11 languages** (EN/PT/FR/ES/DE/ZH/IT/PL/PT-PT/RU/NL — Studio Manager's exact list).
 
 0. `LangKey` is `uint16_t` (the table passed 255 entries): never cast a key to `uint8_t`.
 1. Add the key to the enum, before `I18N_COUNT`.

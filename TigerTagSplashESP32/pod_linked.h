@@ -132,6 +132,30 @@ static bool r8Post(InventoryJson& batch) {
 }
 static void r8LinkedRun(InventoryRequest& r) {
     r.ok=false;r.needsUpdate=false;r7CloudError="Inventaire indisponible. Aucune ecriture NFC.";
+    if(r.op==InventoryRequest::POD_UNLINK) {
+        // Frees a maker chip (Bambu Lab...) that is linked to a finished spool: only the shared link
+        // document goes. The spool stays in the inventory, and no physical chip is ever written.
+        // Each delete is conditional on the revision just read, so a link edited meanwhile in Studio is left alone.
+        InventoryJson batch(64*1024);JsonArray writes=batch.createNestedArray("writes");
+        for(int i=0;i<2;i++) {
+            if(r.uids[i].isEmpty() || (i && r.uids[i]==r.uids[0]))continue;
+            if(!r8Uid(r.uids[i]))return;
+            InventoryJson d(8192);int code=r8AliasGet(r.uids[i],d);
+            if(code==404)continue;
+            if(code!=200 || d["updateTime"].as<String>().isEmpty()){r7CloudError="Inventory unavailable / changed";return;}
+            JsonObject w=writes.createNestedObject();w["delete"]=r8Name(r.uids[i],"rfidAliases");
+            w["currentDocument"]["updateTime"]=d["updateTime"];
+        }
+        if(!writes.size()){r.ok=true;return;}   // nothing is linked any more
+        bool sent=r8Post(batch);
+        bool gone=true;
+        for(int i=0;i<2;i++)if(r.uids[i].length()) {
+            InventoryJson d(8192);if(r8AliasGet(r.uids[i],d)!=404)gone=false;
+        }
+        r.ok=gone;   // a lost reply is reconciled by reading each actual link
+        if(!r.ok && sent)r7CloudError="Lien envoye, relecture impossible. Scanner avant de recommencer.";
+        return;
+    }
     if(r.op==InventoryRequest::POD_RESOLVE) {
         String twin[2],missing[2],targets[2];
         for(int i=0;i<2;i++) {

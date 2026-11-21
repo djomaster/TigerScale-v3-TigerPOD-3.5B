@@ -180,6 +180,7 @@ static bool r7New(const char* kind) {
         return false;
     }
     if(!r7Load(R7_STAGE,job)){podSay("Preparation illisible. Aucun tag ecrit.");return false;}
+    if(!strcmp(kind,"format") && job["kind"]=="reset")kind="reset";
     if(restore) {
         PodJournal previous;
         if(!r7Journal(job,previous,"restoreJournal"))return false;
@@ -355,6 +356,29 @@ static bool r8Link() {
     bool ok=inventoryWait(r,I18N_INV_SYNCING,false);
     podSay(ok?"Identifiant partage enregistre. Les TigerTags existants sont conserves.":r7CloudError);return ok;
 }
+// A maker chip (Bambu Lab...) already linked to a spool, typically a finished one: remove the shared
+// link only. The spool stays in the inventory without a chip, and the chip can then be linked again.
+static bool r8Unlink() {
+    podReadersReversed=false;
+    InventoryRequest r;String label;
+    for(int i=0;i<2;i++)if(r8UiAlias[i] && r8UiUid[i].length()) {
+        r.uids[i]=r8UiUid[i];
+        if(label.length())label+="\n";
+        label+=r8UiUid[i];
+        if(r8UiLabel[i].length())label+=" - "+r8UiLabel[i];
+    }
+    if(r.uids[0].isEmpty() && r.uids[1].isEmpty()){podSay("Inventory unavailable / changed");return false;}
+    podConfirmContext=label+"\nBobine conservee, sans puce.\nAucun tag ne sera ecrit.";
+    if(!podConfirm("Supprimer le lien de cette puce ?"))return false;
+    for(int i=0;i<2;i++)if(r.uids[i].length() && !r8SelectRaw(i,r.uids[i]))return podFail("UID changed / tag absent before unlinking");
+    podOff();r.op=InventoryRequest::POD_UNLINK;
+    bool ok=inventoryWait(r,I18N_INV_SYNCING,false);
+    if(ok) {   // the scan on screen is stale: those chips are free now, so Nouvelle paire becomes the next step
+        for(int i=0;i<2;i++)if(r8UiAlias[i]){r8UiAlias[i]=false;r8UiResolved[i]=false;r8UiLabel[i]="";}
+        r8UiKnown=r8UiResolved[0]||r8UiResolved[1];
+    }
+    podSay(ok?"Lien supprime. La puce peut etre associee a une autre bobine.":r7CloudError);return ok;
+}
 // Display-only translation of the engine's status sentences. The journal logic and the serial
 // log keep the original text; only what reaches the panel follows the chosen language.
 struct PodMsg { const char* src; LangKey key; };
@@ -378,6 +402,8 @@ static const PodMsg kPodMsgs[]={
     {"Aucun tag lisible. Placez la bobine puis scannez.",I18N_POD_M17},
     {"Aucune bobine disponible dans ce compte.",I18N_POD_M18},
     {"Ajouter cet identifiant ?",I18N_POD_M19},
+    {"Supprimer le lien de cette puce ?",I18N_POD_UNLINK_Q},
+    {"Lien supprime. La puce peut etre associee a une autre bobine.",I18N_POD_UNLINK_DONE},
     {"Confirmer cette operation ?",I18N_POD_CONFIRM_OP},
     {"RESTORE original blank data?",I18N_POD_CONFIRM_RESTORE},
     {"Replace completed journal with a NEW pair?",I18N_POD_CONFIRM_REPLACE},
@@ -451,6 +477,7 @@ static String r8Translate(const String& text) {
         struct Frag {const char* from;const char* to;};
         const Frag frags[]={
             {"Lien partage avec Studio et vos balances.\nAucun tag ne sera ecrit.",t(I18N_POD_LINK_NOTE)},
+            {"Bobine conservee, sans puce.\nAucun tag ne sera ecrit.",t(I18N_POD_UNLINK_NOTE)},
             {"associate : ",nullptr},{"reset : ",nullptr},{"restore : ",nullptr},{"refresh : ",nullptr}};
         std::string work(text.c_str());bool changed=false;
         for(const auto& f:frags) {
@@ -505,7 +532,7 @@ static void r8Home(bool tools=false) {
         r8Card(t(I18N_POD_REFRESH),t(I18N_POD_S_REFRESH),&gUi_refresh,2,16,124,false);
         r8Card(t(I18N_POD_VERIFY),t(I18N_POD_S_VERIFY),&gUi_verify,6,245,124,false);
         r8Card(t(I18N_POD_RESUME),t(I18N_POD_S_RESUME),&gUi_resume,5,16,196,false);
-        r8Card(t(I18N_POD_FORMAT),t(I18N_POD_S_FORMAT),&gUi_format,r8UiCompatible?13:3,245,196,false);
+        r8Card(t(I18N_POD_FORMAT),t(I18N_POD_S_FORMAT),&gUi_format,(r8UiScanned&&(r8UiAlias[0]||r8UiAlias[1]))?18:(r8UiCompatible&&!r8UiKnown)?13:3,245,196,false);
         return;
     }
     r8Button(t(I18N_POD_WEIGH),7,18,254,132);
@@ -580,6 +607,7 @@ static void runPodInventory(bool associate,bool updatePrompt) {
         r8Working(a==9?t(I18N_POD_READING):t(I18N_POD_PREPARING));
         if(a==9) {for(int i=0;i<2;i++)r9Check[i][0]=r9Check[i][1]=r9Check[i][2]=0;ok=r8Scan();r8Busy=false;if(ok)r9Report(false);}
         else if(a==10)ok=r8Link();
+        else if(a==18)ok=r8Unlink();
         else {
             // NFC and network operations: full memory gate, with the exact cause on refusal.
             uint32_t have=0,need=0;uint8_t code=r86Reclaim(true,&have,&need);

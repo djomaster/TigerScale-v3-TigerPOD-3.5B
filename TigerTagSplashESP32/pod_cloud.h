@@ -54,11 +54,26 @@ static int r7Get(const String& owner,const String& id,InventoryJson& d,const cha
     if(code==200 && !r86HttpJson(h,d))code=-2;
     h.end();if(code<0)lease.client().stop();return code;
 }
-static bool r7Capture(InventoryJson& job,const String& id,bool mustExist,const char* collection="inventory") {
+// A document Studio left behind: a tombstone spool (deleted:true), or a link to a spool that no longer exists
+// (or is itself a tombstone). Neither describes anything the owner still has, so they may be replaced or removed,
+// but only through the same updateTime precondition as any other document.
+static bool r7Stale(const String& owner,const char* collection,JsonObjectConst fields) {
+    if(!strcmp(collection,"inventory"))return fields["deleted"]["booleanValue"]|false;
+    String spool=inventoryText(fields,"spoolId");
+    if(spool.isEmpty())return true;
+    if(!r7Id(spool))return false;
+    InventoryJson s(128*1024);int code=r7Get(owner,spool,s);
+    if(code==404)return true;
+    return code==200 && (s["fields"]["deleted"]["booleanValue"]|false);
+}
+static bool r7Capture(InventoryJson& job,const String& id,bool mustExist,const char* collection="inventory",bool allowStale=false) {
     InventoryJson d(128*1024);int code=r7Get(job["owner"].as<String>(),id,d,collection);
-    if(code!=(mustExist?200:404)){r7CloudError=code==200?"UID already associated":"Inventory unavailable / changed";return false;}
+    bool stale=false;
+    if(!mustExist && allowStale && code==200 && !d["updateTime"].as<String>().isEmpty() && !d["fields"].isNull()
+       && r7Stale(job["owner"].as<String>(),collection,d["fields"]))stale=true;
+    if(!stale && code!=(mustExist?200:404)){r7CloudError=code==200?"UID already associated":"Inventory unavailable / changed";return false;}
     JsonObject item=job["docs"].as<JsonArray>().createNestedObject();item["id"]=id;item["collection"]=collection;
-    if(mustExist){
+    if(mustExist||stale){
         if(d["updateTime"].as<String>().isEmpty() || d["fields"].isNull())return false;
         item["before"].set(d.as<JsonVariantConst>());
     }
@@ -250,12 +265,22 @@ static void r7CloudRun(InventoryRequest& r) {
     String kind=job["kind"].as<String>();String uid[2]={job["uid0"].as<String>(),job["uid1"].as<String>()};
     job.remove("docs");job.createNestedArray("docs");uint8_t payload[144];
     uint32_t stamp=job["stamp"];
+    if(kind=="format") {
+        // Twin documents that are only tombstones (spool deleted in Studio) leave nothing to keep: erase the tags.
+        bool tombstones=true;
+        for(int i=0;i<2;i++) {
+            InventoryJson d(128*1024);int code=r7Get(job["owner"].as<String>(),uid[i],d);
+            if(code==200){if(!(d["fields"]["deleted"]["booleanValue"]|false))tombstones=false;}
+            else if(code!=404){r7CloudError="Inventory unavailable / changed";return;}
+        }
+        if(tombstones){kind="reset";job["kind"]="reset";}
+    }
     if(kind=="reset") {
-        for(int i=0;i<2;i++)if(!r7Capture(job,uid[i],false))return;
+        for(int i=0;i<2;i++)if(!r7Capture(job,uid[i],false,"inventory",true))return;
         memset(payload,0,144);payload[0]=0x6c;payload[1]=0x41;payload[2]=0xa2;payload[3]=0xe1;
     } else if(kind=="associate") {
         String source=job["source"].as<String>();
-        if(!r7Capture(job,source,true)||!r7Capture(job,uid[0],false)||!r7Capture(job,uid[1],false))return;
+        if(!r7Capture(job,source,true)||!r7Capture(job,uid[0],false,"inventory",true)||!r7Capture(job,uid[1],false,"inventory",true))return;
         JsonObjectConst f=job["docs"][0]["before"]["fields"];
         if(!inventoryChipless(source,f)||job["version"].as<String>()!=job["docs"][0]["before"]["updateTime"].as<String>()
             ||!inventoryEncode(f,stamp,payload)){r7CloudError="Selected spool changed / invalid";return;}
@@ -300,7 +325,7 @@ static void r7CloudRun(InventoryRequest& r) {
     } else {r7CloudError="Unsupported job";return;}
     if(kind=="associate" || kind=="reset") {
         for(int i=0;i<2;i++) {
-            if(!r7Capture(job,uid[i],false,"rfidAliases"))return;
+            if(!r7Capture(job,uid[i],false,"rfidAliases",true))return;
             job["docs"][job["docs"].size()-1]["checkOnly"]=true;
         }
     }

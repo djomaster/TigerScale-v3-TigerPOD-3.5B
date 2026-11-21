@@ -3,6 +3,11 @@
 The short version of every release, newest first — one scroll, no jargon.
 The full story for each version lives in [docs/release-notes/](docs/release-notes/).
 
+## v3.13.0-pod.1.2.1 — TigerPOD frees old tags
+
+Tags of a spool you deleted in Studio can now be formatted and reused from the TigerPOD menu, and a Bambu Lab chip link can be removed.
+[Full notes](docs/release-notes/v3.13.0-pod.1.2.1.md)
+
 ## v3.13.0-pod.1.2.0 — the 3.5 without the B
 
 The Waveshare 3.5 without the B is supported again, with its own firmware in the web installer.

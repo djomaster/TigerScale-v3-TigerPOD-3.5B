@@ -17,7 +17,7 @@ shim=r'''
 struct String:std::string {using std::string::string;String(){}String(const std::string&s):std::string(s){}String(int n):std::string(std::to_string(n)){} };
 const lv_font_t&gFont14=lv_font_montserrat_14;const lv_font_t&gFont16=lv_font_montserrat_14;const lv_font_t&gFont20=lv_font_montserrat_20;
 lv_obj_t*podStatus=nullptr;bool podCancel=false;void(*podService)()=nullptr;String podConfirmContext;
-bool r7Blocked=false,r8UiScanned=false,r8UiKnown=false,r8UiCompatible=false,r86Prompt=false;volatile bool gPodMemRefused=false;
+bool r8UiAlias[2]={false,false};bool r7Blocked=false,r8UiScanned=false,r8UiKnown=false,r8UiCompatible=false,r86Prompt=false;volatile bool gPodMemRefused=false;
 uint32_t millis(){return lv_tick_get();}void delay(int n){lv_tick_inc(n);}
 int touchMode=0;uint32_t touchStart=0;
 bool tsRead(int16_t&x,int16_t&y){x=400;y=280;auto elapsed=millis()-touchStart;if(touchMode==0)return true;if(touchMode==2){x=40;return elapsed>40;}return elapsed>40;}

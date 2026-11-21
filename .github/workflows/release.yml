@@ -209,9 +209,17 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           # Guaranteed to exist — the "Release notes must exist" gate ran first.
+          # The release page always opens with the unofficial-firmware notice,
+          # so it cannot be forgotten in a version's own notes.
+          {
+            echo '> [!IMPORTANT]'
+            echo '> **Unofficial firmware.** TigerScale-V3-TigerPOD+ is an independent community fork. It is not the official TigerScale firmware, and it is not affiliated with, endorsed by or supported by the TigerTag Project. Please report problems with it in this repository, not to the official project. The official firmware is at https://github.com/TigerTag-Project/Tiger-Scale-V3.'
+            echo
+            cat "docs/release-notes/v$VERSION.md"
+          } > "$RUNNER_TEMP/release-notes.md"
           gh release create "$GITHUB_REF_NAME" dist/* \
             --title "TigerScale-V3-TigerPOD+ v$VERSION" \
-            --notes-file "docs/release-notes/v$VERSION.md"
+            --notes-file "$RUNNER_TEMP/release-notes.md"
 
   # Publishing the page is NOT done here. pages.yml is the single thing in this
   # repository allowed to deploy Pages, and this job calls it once the release

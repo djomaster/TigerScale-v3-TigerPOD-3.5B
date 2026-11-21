@@ -345,6 +345,9 @@ enum LangKey : uint16_t {
     I18N_POD_CONFIRM_REPLACE,
     I18N_POD_CONFIRM_TEST,
     I18N_POD_LINK_NOTE,
+    I18N_POD_UNLINK_Q,
+    I18N_POD_UNLINK_NOTE,
+    I18N_POD_UNLINK_DONE,
     I18N_COUNT,
 };
 
@@ -668,6 +671,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "Replace the completed journal with a NEW pair?",
         /* POD_CONFIRM_TEST */ "Prepare the local TEST pair?",
         /* POD_LINK_NOTE */ "Link shared with Studio and your scales.\nNo tag will be written.",
+        /* POD_UNLINK_Q */ "Remove this chip's link?",
+        /* POD_UNLINK_NOTE */ "The spool stays in the inventory, without a chip.\nNo tag will be written.",
+        /* POD_UNLINK_DONE */ "Link removed. The chip can be linked to another spool.",
     },
     // PT (Brazilian Portuguese — Studio's "pt")
     {
@@ -985,6 +991,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "Substituir o diário concluído por um NOVO par?",
         /* POD_CONFIRM_TEST */ "Preparar o par de TESTE local?",
         /* POD_LINK_NOTE */ "Ligação partilhada com o Studio e as suas balanças.\nNenhuma tag será gravada.",
+        /* POD_UNLINK_Q */ "Remover o vínculo deste chip?",
+        /* POD_UNLINK_NOTE */ "A bobina continua no inventário, sem chip.\nNenhuma tag será gravada.",
+        /* POD_UNLINK_DONE */ "Vínculo removido. O chip pode ser vinculado a outra bobina.",
     },
     // FR
     {
@@ -1302,6 +1311,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "Remplacer le journal terminé par une NOUVELLE paire ?",
         /* POD_CONFIRM_TEST */ "Préparer la paire de TEST locale ?",
         /* POD_LINK_NOTE */ "Lien partagé avec Studio et vos balances.\nAucun tag ne sera écrit.",
+        /* POD_UNLINK_Q */ "Supprimer le lien de cette puce ?",
+        /* POD_UNLINK_NOTE */ "La bobine reste dans l'inventaire, sans puce.\nAucun tag ne sera écrit.",
+        /* POD_UNLINK_DONE */ "Lien supprimé. La puce peut être associée à une autre bobine.",
     },
     // ES
     {
@@ -1619,6 +1631,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "¿Reemplazar el diario completado por un NUEVO par?",
         /* POD_CONFIRM_TEST */ "¿Preparar el par de PRUEBA local?",
         /* POD_LINK_NOTE */ "Vínculo compartido con Studio y sus básculas.\nNo se escribirá ningún tag.",
+        /* POD_UNLINK_Q */ "¿Quitar el vínculo de este chip?",
+        /* POD_UNLINK_NOTE */ "La bobina sigue en el inventario, sin chip.\nNo se escribirá ningún tag.",
+        /* POD_UNLINK_DONE */ "Vínculo eliminado. El chip puede vincularse a otra bobina.",
     },
     // DE
     {
@@ -1936,6 +1951,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "Das abgeschlossene Journal durch ein NEUES Paar ersetzen?",
         /* POD_CONFIRM_TEST */ "Das lokale TEST-Paar vorbereiten?",
         /* POD_LINK_NOTE */ "Verknüpfung mit Studio und Ihren Waagen geteilt.\nEs wird kein Tag geschrieben.",
+        /* POD_UNLINK_Q */ "Verknüpfung dieses Chips entfernen?",
+        /* POD_UNLINK_NOTE */ "Die Spule bleibt im Inventar, ohne Chip.\nEs wird kein Tag geschrieben.",
+        /* POD_UNLINK_DONE */ "Verknüpfung entfernt. Der Chip kann mit einer anderen Spule verknüpft werden.",
     },
     // ZH (Han characters, not pinyin)
     // The glyphs come from a generated subset font — scripts/make-cjk-font.sh —
@@ -2259,6 +2277,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "用新的配对替换已完成的日志？",
         /* POD_CONFIRM_TEST */ "准备本地测试配对？",
         /* POD_LINK_NOTE */ "已与Studio和您的秤共享关联。\n不会写入任何标签。",
+        /* POD_UNLINK_Q */ "移除此芯片的关联?",
+        /* POD_UNLINK_NOTE */ "耗材盘仍保留在库存中,但不带芯片。\n不会写入任何标签。",
+        /* POD_UNLINK_DONE */ "已移除关联。此芯片可关联到其他耗材盘。",
     },
     // IT
     {
@@ -2576,6 +2597,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "Sostituire il registro completato con una NUOVA coppia?",
         /* POD_CONFIRM_TEST */ "Preparare la coppia di TEST locale?",
         /* POD_LINK_NOTE */ "Collegamento condiviso con Studio e le tue bilance.\nNessun tag verrà scritto.",
+        /* POD_UNLINK_Q */ "Rimuovere il collegamento di questo chip?",
+        /* POD_UNLINK_NOTE */ "La bobina resta nell'inventario, senza chip.\nNessun tag verrà scritto.",
+        /* POD_UNLINK_DONE */ "Collegamento rimosso. Il chip può essere collegato a un'altra bobina.",
     },
     // PL
     {
@@ -2893,6 +2917,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "Zastąpić ukończony dziennik NOWĄ parą?",
         /* POD_CONFIRM_TEST */ "Przygotować lokalną parę TESTOWĄ?",
         /* POD_LINK_NOTE */ "Powiązanie udostępnione w Studio i na Twoich wagach.\nŻaden tag nie zostanie zapisany.",
+        /* POD_UNLINK_Q */ "Usunąć powiązanie tego chipa?",
+        /* POD_UNLINK_NOTE */ "Szpula zostaje w magazynie, bez chipa.\nŻaden tag nie zostanie zapisany.",
+        /* POD_UNLINK_DONE */ "Powiązanie usunięte. Chip można powiązać z inną szpulą.",
     },
     // PT-PT (European Portuguese — Studio's "pt-pt")
     {
@@ -3210,6 +3237,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "Substituir o registo concluído por um NOVO par?",
         /* POD_CONFIRM_TEST */ "Preparar o par de TESTE local?",
         /* POD_LINK_NOTE */ "Ligação partilhada com o Studio e as suas balanças.\nNenhuma tag será gravada.",
+        /* POD_UNLINK_Q */ "Remover a ligação deste chip?",
+        /* POD_UNLINK_NOTE */ "A bobina fica no inventário, sem chip.\nNenhuma tag será gravada.",
+        /* POD_UNLINK_DONE */ "Ligação removida. O chip pode ser ligado a outra bobina.",
     },
     // RU (Russian — Studio's "ru")
     {
@@ -3527,6 +3557,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "Заменить завершённый журнал НОВОЙ парой?",
         /* POD_CONFIRM_TEST */ "Подготовить локальную ТЕСТОВУЮ пару?",
         /* POD_LINK_NOTE */ "Связь передана в Studio и на ваши весы.\nНи один тег не будет записан.",
+        /* POD_UNLINK_Q */ "Удалить связь этого чипа?",
+        /* POD_UNLINK_NOTE */ "Катушка останется в инвентаре, без чипа.\nНи один тег не будет записан.",
+        /* POD_UNLINK_DONE */ "Связь удалена. Чип можно привязать к другой катушке.",
     },
     // NL (Dutch — Studio's "nl")
     {
@@ -3844,6 +3877,9 @@ static const char* const kStrings[NUM_LANGS][I18N_COUNT] = {
         /* POD_CONFIRM_REPLACE */ "Het voltooide logboek vervangen door een NIEUW paar?",
         /* POD_CONFIRM_TEST */ "Het lokale TESTpaar voorbereiden?",
         /* POD_LINK_NOTE */ "Koppeling gedeeld met Studio en uw weegschalen.\nEr wordt geen tag geschreven.",
+        /* POD_UNLINK_Q */ "Koppeling van deze chip verwijderen?",
+        /* POD_UNLINK_NOTE */ "De spoel blijft in de voorraad, zonder chip.\nEr wordt geen tag geschreven.",
+        /* POD_UNLINK_DONE */ "Koppeling verwijderd. De chip kan aan een andere spoel worden gekoppeld.",
     },
 };
 

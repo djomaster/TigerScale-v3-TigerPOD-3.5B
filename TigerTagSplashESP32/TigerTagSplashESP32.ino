@@ -290,7 +290,7 @@ struct BambuTag {
     float diameter = 0;
 };
 struct InventoryRequest {
-    enum Operation { LIST, PREPARE, COMMIT, PREPARE_RELEASE, RELEASE, CONTAINERS, SET_CONTAINER, BAMBU_LOOKUP, BAMBU_CREATE, BAMBU_UPGRADE, POD_JOB, POD_LINK, POD_RESOLVE } op = LIST;
+    enum Operation { LIST, PREPARE, COMMIT, PREPARE_RELEASE, RELEASE, CONTAINERS, SET_CONTAINER, BAMBU_LOOKUP, BAMBU_CREATE, BAMBU_UPGRADE, POD_JOB, POD_LINK, POD_RESOLVE, POD_UNLINK } op = LIST;
     uint8_t podAction = 0;
     bool podAll = false, alias[2] = {};
     bool needsUpdate = false;   // Studio asked for a tag refresh (needUpdateAt) on a direct TigerTag pair
@@ -579,9 +579,9 @@ const char* TIGERTAG_FIREBASE_WEB_API_KEY = "AIzaSyCkxPTs_Cv0KVLqsZj-UKWWqIY0Otf
 
 // Embedded build identity — exposed via /api/status and the heartbeat so the
 // app/Studio can compare against the latest published version.json.
-#define TIGERSCALE_FW_VERSION  "3.13.0-pod.1.2.0"
-#define TIGERSCALE_VERSION_LABEL "V3 v3.13.0 - POD v1.2.0"
-#define TIGERSCALE_CUSTOM_BUILD "3.13.0-pod.1.2.0+fork3.11+3.5B+POD"
+#define TIGERSCALE_FW_VERSION  "3.13.0-pod.1.2.1"
+#define TIGERSCALE_VERSION_LABEL "V3 v3.13.0 - POD v1.2.1"
+#define TIGERSCALE_CUSTOM_BUILD "3.13.0-pod.1.2.1+fork3.11+3.5B+POD"
 static bool gPodPhysicalOnly = false;
 static bool gPodWriteAllowed = false;
 static void runPodTest();
@@ -11304,7 +11304,7 @@ static void inventoryRun(InventoryRequest* r) {
     if (WiFi.status() != WL_CONNECTED || !ensureFirebaseToken() || firebaseUid.isEmpty()) return;
     if (r->owner.isEmpty()) r->owner = firebaseUid;
     if (r->owner != firebaseUid) { r->error = I18N_NO_ACCOUNT; return; }
-    if (r->op == InventoryRequest::POD_LINK || r->op == InventoryRequest::POD_RESOLVE) { r8LinkedRun(*r); return; }
+    if (r->op == InventoryRequest::POD_LINK || r->op == InventoryRequest::POD_RESOLVE || r->op == InventoryRequest::POD_UNLINK) { r8LinkedRun(*r); return; }
     if (r->op == InventoryRequest::POD_JOB) { r7CloudRun(*r); return; }
     if (r->op == InventoryRequest::BAMBU_LOOKUP) { inventoryBambuLookup(*r); return; }
     if (r->op == InventoryRequest::BAMBU_CREATE) { inventoryBambuCreate(*r); return; }

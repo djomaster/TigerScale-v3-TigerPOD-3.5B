@@ -181,6 +181,25 @@ int main() {
  {PodResponse response;uint8_t bytes[4096]={};CHECK(response.write(bytes,512)==512);CHECK(response.size==512);failResponseAlloc=true;CHECK(response.write(bytes,4096)==0&&response.full);failResponseAlloc=false;}
  {PodResponse response;uint8_t b=0;CHECK(response.write(&b,192*1024+1)==0&&response.full);}
  seed();failResponseAlloc=true;InventoryJson unavailable(8192);CHECK(r7Get(firebaseUid,"TIGERDATA_spool",unavailable)!=200);CHECK(posts==0);failResponseAlloc=false;
+ // Documents left by a spool deleted in Studio: tombstones and dangling links must not block a blank/associate.
+ {
+  auto tomb=[&](const char* id){InventoryJson t(8192);t["updateTime"]="t1";t["fields"]["deleted"]["booleanValue"]=true;t["fields"]["uid"]["stringValue"]=id;saveServer(id,t);};
+  auto dangling=[&](const char* uid,const char* spool){InventoryJson a(8192);a["updateTime"]="a1";a["fields"]["spoolId"]["stringValue"]=spool;a["fields"]["chip"]["stringValue"]="mifare1k";saveServer((std::string("alias:")+uid).c_str(),a);};
+  seed();tomb("04112233445566");tomb("04778899AABBCC");dangling("04112233445566","GONE_spool");
+  stage(job,"reset");CHECK(job["docs"].size()==4);CHECK(job["docs"][0]["after"].isNull());CHECK(!job["docs"][0]["before"].isNull());
+  commit(job);CHECK(!server.count("04112233445566")&&!server.count("04778899AABBCC")&&!server.count("alias:04112233445566"));CHECK(server.count("TIGERDATA_spool"));
+  seed();tomb("04112233445566");tomb("04778899AABBCC");stage(job,"associate");commit(job);
+  current.clear();deserializeJson(current,server["04112233445566"]);CHECK(inventoryText(current["fields"],"uid")=="04112233445566");CHECK(!(current["fields"]["deleted"]["booleanValue"]|false));
+  seed();tomb("04112233445566");tomb("04778899AABBCC");stage(job,"format");CHECK(job["kind"]=="reset");commit(job);CHECK(!server.count("04112233445566")&&!server.count("04778899AABBCC"));
+  // A link whose spool is a tombstone is stale too; a link to a live spool still protects the chip.
+  seed();tomb("GONE_spool");dangling("04112233445566","GONE_spool");stage(job,"reset");commit(job);CHECK(!server.count("alias:04112233445566"));
+  seed();dangling("04112233445566","TIGERDATA_spool");job.clear();job["owner"]="owner";job["kind"]="reset";job["uid0"]="04112233445566";job["uid1"]="04778899AABBCC";job["stamp"]=1234;
+  CHECK(r7Save(R7_STAGE,job));{InventoryRequest rr;r7CloudRun(rr);CHECK(!rr.ok);}
+  // A live spool on the UID is never treated as stale.
+  seed();{InventoryJson live(8192);deserializeJson(live,server["TIGERDATA_spool"]);saveServer("04112233445566",live);}
+  job.clear();job["owner"]="owner";job["kind"]="reset";job["uid0"]="04112233445566";job["uid1"]="04778899AABBCC";job["stamp"]=1234;
+  CHECK(r7Save(R7_STAGE,job));{InventoryRequest rr;r7CloudRun(rr);CHECK(!rr.ok);}
+ }
  printf("%d r7 cloud checks passed (actual planner, mocked FS/HTTP).\n",checks);
 }
 '''

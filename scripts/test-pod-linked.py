@@ -16,6 +16,14 @@ int main(){
  r8Seen[0]=R8Seen();r8Seen[1]=R8Seen();r8LinkedRun(scan);CHECK(scan.ok&&scan.resolved[0]==link.source);
  int before=posts;r8LinkedRun(link);CHECK(!link.ok&&posts==before); // never overwrite a previous alias
  offline=true;r8LinkedRun(scan);CHECK(!scan.ok);offline=false;
+ // Unlink: only the shared links go, the spool stays; a refused commit changes nothing; a repeat finds nothing and still succeeds.
+ {InventoryRequest un;un.op=InventoryRequest::POD_UNLINK;un.uids[0]=link.uids[0];un.uids[1]=link.uids[1];
+  denyCommit=true;r8LinkedRun(un);CHECK(!un.ok&&server.size()==3);denyCommit=false;
+  int p0=posts;r8LinkedRun(un);CHECK(un.ok&&posts==p0+1&&server.size()==1&&server.count("TIGERDATA_spool"));
+  p0=posts;r8LinkedRun(un);CHECK(un.ok&&posts==p0&&server.size()==1);
+  un.uids[0]="BAD/UID";r8LinkedRun(un);CHECK(!un.ok);
+  InventoryJson cur(8192);deserializeJson(cur,server["TIGERDATA_spool"]);link.version=cur["updateTime"].as<String>();   // the app lists the spools again first
+  r8LinkedRun(link);CHECK(link.ok&&server.size()==3);link.version="v1";} // freed chips link again to a spool
  server.erase("TIGERDATA_spool");r8LinkedRun(scan);CHECK(!scan.ok); // deleted target does not authorize weighing
  seed();lostReply=true;r8LinkedRun(link);CHECK(link.ok&&posts==1); // lost ACK reconciled
  seed();link.version="stale";r8LinkedRun(link);CHECK(!link.ok&&posts==0);link.version="v1";

@@ -12,6 +12,18 @@ scaffold's placeholder text.
 
 ## [Unreleased]
 
+## [3.13.0-pod.1.2.1] - 2026-11-21
+
+TigerPOD frees tags left "associated" by a spool deleted in Studio. Full notes: `docs/release-notes/v3.13.0-pod.1.2.1.md`.
+
+### Fixed
+- Tombstone spool documents and links to missing spools no longer block a blank erase or a new association; they are removed or replaced under an `updateTime` precondition. Format over tombstoned twin documents becomes a blank erase.
+- The Format tile formats a known pair properly.
+
+### Added
+- Unlink action for maker-chip (Bambu Lab) links.
+- Release pages open with the unofficial-firmware notice.
+
 ## [3.13.0-pod.1.2.0] - 2026-11-20
 
 Support for the Waveshare ESP32-S3-Touch-LCD-3.5 without the B. Full notes: `docs/release-notes/v3.13.0-pod.1.2.0.md`.
