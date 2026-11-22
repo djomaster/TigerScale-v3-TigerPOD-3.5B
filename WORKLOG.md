@@ -20,6 +20,7 @@ log lives in git history and the synthesised entry lives in the changelog.
 
 ## Fixed
 
+- TigerPOD: placing a spool whose tags no spool owns (blank TigerTag pair, blank NFC chip, Bambu Lab or other maker chip) opened the Read tags report and stopped there. The automatic scan now continues straight into the association wizard, the same one the Nouvelle paire tile starts. A manual Read, and tags already known or linked, behave as before.
 - TigerPOD: a spool deleted in Studio could leave documents behind (a `deleted:true` inventory tombstone on the tag UID, or a `rfidAliases` link to a spool that no longer exists), and every blank-erase or new association then refused the tags as "already associated". Such stale documents are now captured with their `updateTime` and removed or replaced in the same conditional batch; a live spool or a link to a live spool still protects the tags. Format on tags whose twin documents are only tombstones now becomes a full blank erase of both tags. Covered by `scripts/test-pod-cloud.py`.
 - TigerPOD: the Format tile ran the plain blank-erase of both tags whenever they were readable, and that action refuses any UID still in the inventory ("UID already associated"). It now runs the real pair Format (the spool's data stays in the inventory without a tag, and the tags are freed) when the inventory knows the tags, and the plain erase only for unknown ones (`TigerTagSplashESP32/pod_inventory.h`).
 

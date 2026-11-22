@@ -6,6 +6,7 @@ The full story for each version lives in [docs/release-notes/](docs/release-note
 ## v3.13.0-pod.1.2.1 — TigerPOD frees old tags
 
 Tags of a spool you deleted in Studio can now be formatted and reused from the TigerPOD menu, and a Bambu Lab chip link can be removed.
+A new spool with unassociated tags now opens the association straight away.
 [Full notes](docs/release-notes/v3.13.0-pod.1.2.1.md)
 
 ## v3.13.0-pod.1.2.0 — the 3.5 without the B

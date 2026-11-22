@@ -595,8 +595,9 @@ static void runPodInventory(bool associate,bool updatePrompt) {
     setupRFID(false);lv_obj_t* previous=lv_scr_act();r8Screen=lv_obj_create(nullptr);lv_scr_load(r8Screen);
     podTranslate=r8Translate;podConfirmUi=r8Confirm;podProgressUi=r8Progress;r8UiScanned=false;r8Action=associate?9:0;r8Busy=false;r8Home();
     bool toolsContext=false,touched=false,updated=false;int lastTool=0;
+    bool autoLink=associate;int autoNext=0;   // opened by a new spool on the scale: the first scan may continue straight into the link wizard
     while(true) {
-        r7Sample();lv_timer_handler();delay(5);int a=r8Action;r8Action=0;if(!a)continue;
+        r7Sample();lv_timer_handler();delay(5);int a=r8Action;r8Action=0;if(!a){a=autoNext;autoNext=0;}if(!a)continue;
         if(a==7 || a==16)break;
         if(a==17)r86ScheduleResume();
         if(a==11 || a==12){toolsContext=a==11;r8Home(toolsContext);continue;}
@@ -605,7 +606,14 @@ static void runPodInventory(bool associate,bool updatePrompt) {
         if(a==2 || a==3 || a==4 || a==6)lastTool=a;
         r9Reported=false;gPodMemRefused=false;podCancel=false;podReadError="unknown";r7CloudError="Operation annulee ou non terminee. Scanner avant de recommencer.";r8Busy=true;bool ok=false;
         r8Working(a==9?t(I18N_POD_READING):t(I18N_POD_PREPARING));
-        if(a==9) {for(int i=0;i<2;i++)r9Check[i][0]=r9Check[i][1]=r9Check[i][2]=0;ok=r8Scan();r8Busy=false;if(ok)r9Report(false);}
+        if(a==9) {for(int i=0;i<2;i++)r9Check[i][0]=r9Check[i][1]=r9Check[i][2]=0;ok=r8Scan();r8Busy=false;
+            // Tags that no spool owns (blank TigerTag pair, blank NFC chip, Bambu Lab or other maker chip): go straight
+            // to the association wizard, as the Nouvelle paire tile would, instead of stopping on the read report.
+            // A manual rescan, or tags the inventory already knows or has linked, still show the report.
+            if(ok && autoLink && r8UiScanned && !r8UiKnown && !r8UiAlias[0] && !r8UiAlias[1]
+               && (r8UiUid[0].length() || r8UiUid[1].length()))autoNext=r8UiCompatible?1:10;
+            else if(ok)r9Report(false);
+            autoLink=false;}
         else if(a==10)ok=r8Link();
         else if(a==18)ok=r8Unlink();
         else {

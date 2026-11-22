@@ -21,6 +21,7 @@ TigerPOD frees tags left "associated" by a spool deleted in Studio. Full notes: 
 - The Format tile formats a known pair properly.
 
 ### Added
+- The automatic scan of unassociated tags continues straight into the association wizard.
 - Unlink action for maker-chip (Bambu Lab) links.
 - Release pages open with the unofficial-firmware notice.
 
