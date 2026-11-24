@@ -18,6 +18,10 @@ log lives in git history and the synthesised entry lives in the changelog.
 
 ---
 
+## Changed
+
+- Rebased on the official 3.14.0 (three-way merge of the .ino, the docs from upstream applied): three-second start-up with the Wi-Fi in the background, no restart after choosing a network, automatic reconnection every 30 seconds, keyboard follows the language. Version 3.14.0-pod.1.2.1; TigerPOD unchanged.
+
 ## Fixed
 
 - TigerPOD: placing a spool whose tags no spool owns (blank TigerTag pair, blank NFC chip, Bambu Lab or other maker chip) opened the Read tags report and stopped there. The automatic scan now continues straight into the association wizard, the same one the Nouvelle paire tile starts. A manual Read, and tags already known or linked, behave as before.

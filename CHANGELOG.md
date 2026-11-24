@@ -12,6 +12,18 @@ scaffold's placeholder text.
 
 ## [Unreleased]
 
+## [3.14.0-pod.1.2.1] - 2026-11-23
+
+Rebased on the official 3.14.0. Full notes: `docs/release-notes/v3.14.0-pod.1.2.1.md`.
+
+### Changed
+- Start-up takes about three seconds instead of twenty; the Wi-Fi connects in the background and no longer holds the boot.
+- Choosing a Wi-Fi network no longer restarts the scale.
+- The on-screen keyboard follows the language (AZERTY for French, QWERTZ for German).
+
+### Fixed
+- A scale that found no network at start-up stayed offline; it now retries every 30 seconds.
+
 ## [3.13.0-pod.1.2.1] - 2026-11-21
 
 TigerPOD frees tags left "associated" by a spool deleted in Studio. Full notes: `docs/release-notes/v3.13.0-pod.1.2.1.md`.

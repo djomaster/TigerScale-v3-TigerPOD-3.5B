@@ -21,28 +21,28 @@
 //   WEIGHT ROUNDING                                        994- 1013
 //   GLOBAL OBJECTS                                        1014- 1873
 //   CONFIGURATION VARIABLES                               1874- 2330
-//   OLED DISPLAY                                          2331- 3148
-//   CLOUD PARSING                                         3149- 3163
-//   WIFI SETUP                                            3164- 8310
-//   LITTLEFS                                              8311- 8614
-//   FIREBASE AUTHENTICATION                               8615-11337
-//   WEBSOCKET                                            11338-11364
-//   CLOUD WORKER TASK  (non-blocking Firestore on core 0) 11365-11505
-//   UNIFIED WS FRAME BUILDER                             11506-11630
-//   WEIGHT FILTER HELPERS                                11631-11646
-//   POST-SEND STATE RESET (shared by all send paths)     11647-11667
-//   SHARED WEIGHT PUSH HANDLER (used by /api/weight and /api/push-weight) 11668-11774
-//   WEB SERVER                                           11775-12802
-//   CLOUD COMMUNICATION                                  12803-12989
-//   WEIGH WORKFLOW  (IDLE → SCANNING → STABLE_WAIT → SENDING) 12990-13527
-//   mDNS                                                 13528-13565
-//   SCALE                                                13566-13771
-//   ES8311 codec beep (I2S slave mode, Wire I2C @ 0x18)  13772-13897
-//   RFID                                                 13898-16082
-//   OTA — Over-the-air firmware + filesystem update    16083-16746
-//   LVGL bridge + main weigh screen                      16747-17655
-//   Remote live view: the screen out, taps back in       17656-18523
-//   SETUP & LOOP                                         18524-19563
+//   OLED DISPLAY                                          2331- 3158
+//   CLOUD PARSING                                         3159- 3173
+//   WIFI SETUP                                            3174- 8404
+//   LITTLEFS                                              8405- 8708
+//   FIREBASE AUTHENTICATION                               8709-11431
+//   WEBSOCKET                                            11432-11458
+//   CLOUD WORKER TASK  (non-blocking Firestore on core 0) 11459-11599
+//   UNIFIED WS FRAME BUILDER                             11600-11724
+//   WEIGHT FILTER HELPERS                                11725-11740
+//   POST-SEND STATE RESET (shared by all send paths)     11741-11761
+//   SHARED WEIGHT PUSH HANDLER (used by /api/weight and /api/push-weight) 11762-11868
+//   WEB SERVER                                           11869-12896
+//   CLOUD COMMUNICATION                                  12897-13083
+//   WEIGH WORKFLOW  (IDLE → SCANNING → STABLE_WAIT → SENDING) 13084-13621
+//   mDNS                                                 13622-13659
+//   SCALE                                                13660-13865
+//   ES8311 codec beep (I2S slave mode, Wire I2C @ 0x18)  13866-13991
+//   RFID                                                 13992-16176
+//   OTA — Over-the-air firmware + filesystem update    16177-16840
+//   LVGL bridge + main weigh screen                      16841-17749
+//   Remote live view: the screen out, taps back in       17750-18617
+//   SETUP & LOOP                                         18618-19697
 //
 //   To regenerate:  bash scripts/update_toc.sh
 // --- TOC END -----------------------------------------------
@@ -579,9 +579,9 @@ const char* TIGERTAG_FIREBASE_WEB_API_KEY = "AIzaSyCkxPTs_Cv0KVLqsZj-UKWWqIY0Otf
 
 // Embedded build identity — exposed via /api/status and the heartbeat so the
 // app/Studio can compare against the latest published version.json.
-#define TIGERSCALE_FW_VERSION  "3.13.0-pod.1.2.1"
-#define TIGERSCALE_VERSION_LABEL "V3 v3.13.0 - POD v1.2.1"
-#define TIGERSCALE_CUSTOM_BUILD "3.13.0-pod.1.2.1+fork3.11+3.5B+POD"
+#define TIGERSCALE_FW_VERSION  "3.14.0-pod.1.2.1"
+#define TIGERSCALE_VERSION_LABEL "V3 v3.14.0 - POD v1.2.1"
+#define TIGERSCALE_CUSTOM_BUILD "3.14.0-pod.1.2.1+fork3.11+3.5B+POD"
 static bool gPodPhysicalOnly = false;
 static bool gPodWriteAllowed = false;
 static void runPodTest();
@@ -2467,6 +2467,13 @@ static bool gBootComplete = false;
 // here because setup() is a long linear sequence, not the periodic loop()
 // where LVGL is normally serviced -- without it nothing would appear on
 // screen until the very end of boot.
+// The logo stays up at least this long, but boot does not stop for it: the
+// work carries on behind the picture, and only the progress screen waits for
+// the time to run out. It used to be a plain delay(2000) -- two seconds of the
+// owner looking at a logo while nothing at all happened.
+static const uint32_t SPLASH_MIN_MS = 2000;
+static uint32_t gSplashUntilMs = 0;
+
 static lv_obj_t *lvBootScreen      = nullptr;
 static lv_obj_t *lvBootBarFill     = nullptr;
 static lv_obj_t *lvBootStatusLabel = nullptr;
@@ -2474,6 +2481,9 @@ static const int16_t BOOT_BAR_W = 400;
 
 static void bootProgress(uint8_t pct, const char* status) {
     if (!gDisplayReady || !lvglReady) return;
+    // The logo is still within its two seconds: leave it on screen. Boot keeps
+    // going regardless -- only this picture of its progress is held back.
+    if ((int32_t)(gSplashUntilMs - millis()) > 0) return;
 
     if (lvBootScreen == nullptr) {
         lvBootScreen = lv_obj_create(nullptr);
@@ -3726,6 +3736,64 @@ static const char *kbMapUpper[] = {
     "_","-","Z","X","C","V","B","N","M",".",",",":","\n",
     LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
 };
+// ---- Per-language layouts --------------------------------------------------
+//
+// What the keyboard is for decides what a layout may do with it. It serves
+// three fields and no others: the WiFi password, and the account e-mail and
+// password. All three are ASCII.
+//
+// So moving the ASCII keys to where a reader of that language reaches for them
+// helps -- a French owner's hand goes to A where QWERTY puts Q, a German's to Z
+// where it puts Y. Swapping the alphabet does not: a Cyrillic keyboard would
+// leave a Russian owner unable to type the WiFi password printed on the back of
+// the router. Russian therefore keeps the Latin keys, and every layout below
+// carries the same 26 letters and the same @ -- only their positions move.
+//
+// Chinese keeps QWERTY for the same practical reason: pinyin is typed on QWERTY
+// anyway, and a character keyboard needs an IME this firmware does not have.
+//
+// Accented letters are deliberately absent from all of them. They do not fit a
+// row without evicting something, and none of the three fields wants them.
+
+// AZERTY, for French. m moves to the end of the middle row, as on a real
+// AZERTY, and @ takes the slot m leaves in the bottom row.
+static const char *kbMapLowerFr[] = {
+    "&123","a","z","e","r","t","y","u","i","o","p",LV_SYMBOL_BACKSPACE,"\n",
+    "ABC","q","s","d","f","g","h","j","k","l","m","\n",
+    "_","-","w","x","c","v","b","n","@",".",",",":","\n",
+    LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
+};
+static const char *kbMapUpperFr[] = {
+    "&123","A","Z","E","R","T","Y","U","I","O","P",LV_SYMBOL_BACKSPACE,"\n",
+    "abc","Q","S","D","F","G","H","J","K","L","M","\n",
+    "_","-","W","X","C","V","B","N","@",".",",",":","\n",
+    LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
+};
+// AZERTY needs its own widths. In kbCtrlLower the middle row ends on 3, a width
+// cut for the @ that sits there in QWERTY; on AZERTY that slot holds m, and
+// reusing the array would draw one letter half again as wide as the rest.
+static const lv_btnmatrix_ctrl_t kbCtrlLowerFr[] = {
+    (lv_btnmatrix_ctrl_t)(LV_KEYBOARD_CTRL_BTN_FLAGS | 3), 2,2,2,2,2,2,2,2,2,2, (lv_btnmatrix_ctrl_t)(LV_KEYBOARD_CTRL_BTN_FLAGS | 3),
+    (lv_btnmatrix_ctrl_t)(LV_KEYBOARD_CTRL_BTN_FLAGS | 3), 2,2,2,2,2,2,2,2,2, 2,
+    2,2,2,2,2,2,2,2,2,2,2,2,
+    (lv_btnmatrix_ctrl_t)(LV_KEYBOARD_CTRL_BTN_FLAGS | 3), 10, (lv_btnmatrix_ctrl_t)(LV_KEYBOARD_CTRL_BTN_FLAGS | 3), (lv_btnmatrix_ctrl_t)(LV_KEYBOARD_CTRL_BTN_FLAGS | 4)
+};
+
+// QWERTZ, for German: y and z trade places and nothing else moves, so the
+// QWERTY widths still describe it exactly.
+static const char *kbMapLowerDe[] = {
+    "&123","q","w","e","r","t","z","u","i","o","p",LV_SYMBOL_BACKSPACE,"\n",
+    "ABC","a","s","d","f","g","h","j","k","l","@","\n",
+    "_","-","y","x","c","v","b","n","m",".",",",":","\n",
+    LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
+};
+static const char *kbMapUpperDe[] = {
+    "&123","Q","W","E","R","T","Z","U","I","O","P",LV_SYMBOL_BACKSPACE,"\n",
+    "abc","A","S","D","F","G","H","J","K","L","@","\n",
+    "_","-","Y","X","C","V","B","N","M",".",",",":","\n",
+    LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
+};
+
 static const char *kbMapSpec[] = {
     "abc","1","2","3","4","5","6","7","8","9","0",LV_SYMBOL_BACKSPACE,"\n",
     "~","!","@","#","$","%","^","&","*","(",")","=","\n",
@@ -3862,9 +3930,18 @@ static String tsKeyboard(const String& header, bool password) {
     lv_obj_align(kb, LV_ALIGN_TOP_LEFT, 4, 94);
     lv_obj_clear_flag(kb, LV_OBJ_FLAG_SCROLLABLE);
     lv_keyboard_set_textarea(kb, ta);
-    lv_keyboard_set_map(kb, LV_KEYBOARD_MODE_TEXT_LOWER, kbMapLower, kbCtrlLower);
-    lv_keyboard_set_map(kb, LV_KEYBOARD_MODE_TEXT_UPPER, kbMapUpper, kbCtrlLower);
-    lv_keyboard_set_map(kb, LV_KEYBOARD_MODE_SPECIAL,    kbMapSpec,  kbCtrlSpec);
+    // The layout follows the interface language; the symbol mode never changes.
+    const char **kbLower = kbMapLower;
+    const char **kbUpper = kbMapUpper;
+    const lv_btnmatrix_ctrl_t *kbCtrl = kbCtrlLower;
+    switch (gLanguage) {
+        case LANG_FR: kbLower = kbMapLowerFr; kbUpper = kbMapUpperFr; kbCtrl = kbCtrlLowerFr; break;
+        case LANG_DE: kbLower = kbMapLowerDe; kbUpper = kbMapUpperDe; break;
+        default: break;
+    }
+    lv_keyboard_set_map(kb, LV_KEYBOARD_MODE_TEXT_LOWER, kbLower,   kbCtrl);
+    lv_keyboard_set_map(kb, LV_KEYBOARD_MODE_TEXT_UPPER, kbUpper,   kbCtrl);
+    lv_keyboard_set_map(kb, LV_KEYBOARD_MODE_SPECIAL,    kbMapSpec, kbCtrlSpec);
     lv_obj_set_style_bg_color(kb, LVCOL_BG, 0);
     lv_obj_set_style_border_width(kb, 0, 0);
     lv_obj_set_style_pad_all(kb, 2, 0);
@@ -8090,23 +8167,28 @@ static void runSettingsMenu() {
 
         switch (sAction) {
             case SA_WIFI: {
-                bool ok = wifiTouchConfigure();
-                if (ok) {
-                    // Same centered badge/title/subtitle treatment as the
-                    // other WiFi/Firebase result screens, instead of the old
-                    // raw-gfx green-text-on-black reboot message.
-                    lv_obj_t *rebootCol;
-                    lv_obj_t *rebootScr = lvglCenteredScreen(&rebootCol);
-                    lvglAddStatusBadge(rebootCol, true);
-                    lvglAddCenteredLabel(rebootCol, t(I18N_WIFI_CONNECTED), LVCOL_GREEN, &gFont20);
-                    lvglAddCenteredLabel(rebootCol, WiFi.localIP().toString(), LVCOL_MUTED, &gFont14);
-                    lvglAddCenteredLabel(rebootCol, t(I18N_REBOOTING), LVCOL_MUTED, &gFont14);
-                    // Device restarts right after -- no need to clean up the
-                    // previous screen object, same as the OTA success screen.
-                    lv_scr_load(rebootScr);
-                    uint32_t t0 = millis(); while (millis() - t0 < 2000) { lv_timer_handler(); delay(20); }
-                    ESP.restart();
-                }
+                // No restart after a new network. One used to follow every
+                // successful connection here, because everything that needs the
+                // network -- mDNS, the clock, the cloud, the account -- was set
+                // up only at boot. None of it is any more: mDNS starts on the
+                // connection event, the clock on the first link, and the cloud
+                // and account gates close in the moment there is an address
+                // (see the note above setupWiFi()).
+                //
+                // wifiTouchConfigure() has already shown its own "connected"
+                // screen and left the weigh screen loaded; this loop rebuilds
+                // the list on its next pass, with the new network in the WiFi
+                // row. The second confirmation that stood here existed only to
+                // say "Rebooting".
+                //
+                // A network the owner just chose is a sanctioned change, so it
+                // becomes the network of record now. loop() wipes the account
+                // session when the network changes under it, and the restart
+                // used to keep that from firing by starting this variable over
+                // empty; without the restart, leaving it on the old network
+                // would sign the owner out of their account for choosing a new
+                // one.
+                if (wifiTouchConfigure()) lastConnectedSSID = WiFi.SSID();
                 break;
             }
             case SA_FIREBASE:
@@ -8245,6 +8327,21 @@ settings_done:
     { int16_t dx, dy; uint32_t t0=millis(); while(tsRead(dx,dy) && millis()-t0<1000) delay(20); }
 }
 
+// WiFi in the background. Boot starts the association and moves on; loop()
+// sees it through. The first retry comes after the 15 s the boot used to wait,
+// so a slow access point gets exactly the time it always had -- only now the
+// owner can weigh while it takes it. After that, every 30 s for as long as the
+// scale is offline.
+//
+// That second part is new, and it is a fix in its own right. WiFi is set not to
+// auto-reconnect, and nothing else ever retried: a scale that found no network
+// at power-on -- or lost it when the router restarted -- stayed offline until
+// someone touched it. The bench unit was measured still at wifi=0 three minutes
+// after a boot that had failed to connect.
+static const uint32_t WIFI_FIRST_RETRY_MS = 15000;
+static const uint32_t WIFI_RETRY_MS       = 30000;
+static uint32_t       gWifiNextRetryMs    = 0;
+
 void setupWiFi() {
     gMdnsName = String("tigerscale-") + macSuffix4();
     Serial.println("[WIFI] setupWiFi start");
@@ -8274,17 +8371,14 @@ void setupWiFi() {
         if (!gBootComplete) bootProgress(35, "Connecting WiFi...");
         else displayMessage("Connecting WiFi...", storedSsid.c_str());
         wifiBeginBestAp(storedSsid.c_str(), storedPass.c_str());
-        uint32_t t0 = millis();
-        while (WiFi.status() != WL_CONNECTED && millis() - t0 < 15000) {
-            if (!gBootComplete) {
-                uint8_t p = 35 + (uint8_t)((millis() - t0) * 15 / 15000);
-                bootProgress(p, "Connecting WiFi...");
-            }
-            delay(300);
-        }
-        connected = (WiFi.status() == WL_CONNECTED);
-        Serial.printf("[WIFI] connect result: %s\n", connected ? "OK" : "FAIL");
+        // No waiting here. This loop used to hold boot for up to 15 s -- 73 % of
+        // a measured 21 s boot with the network out of reach -- while the scale,
+        // which needs no network to weigh, showed a progress bar. The
+        // association completes in the background; onWiFiEvent() marks the link
+        // up and starts mDNS, and loop() does the rest.
+        Serial.println("[WIFI] connecting in the background");
     }
+    gWifiNextRetryMs = millis() + WIFI_FIRST_RETRY_MS;
 
     wifiConnected = connected;
     cloudOK = connected;
@@ -8302,8 +8396,8 @@ void setupWiFi() {
         if (!gBootComplete) bootProgress(52, "WiFi connected");
         else displayMessage("WiFi Connected!", WiFi.SSID(), WiFi.localIP().toString(), "Cloud: OK");
         delay(800);
-    } else {
-        Serial.println("[WIFI] offline - use WiFi button on scale screen");
+    } else if (storedSsid.length() == 0) {
+        Serial.println("[WIFI] no network saved - use WiFi button on scale screen");
     }
 }
 
@@ -13584,7 +13678,7 @@ void setupScale() {
     }
     gZeroAnchorOffset = scale.get_offset();
     netLog("ZERO reason=startup restore offset=" + String(gZeroAnchorOffset));
-    if (!gBootComplete) { bootProgress(92, "Scale ready"); delay(400); }
+    if (!gBootComplete) { bootProgress(92, "Scale ready"); }
     else { displayMessage("Scale OK", tareLooksValid ? "Tare restored" : t(I18N_ZERO_REQUIRED)); delay(1000); }
 }
 
@@ -18550,9 +18644,11 @@ void setup() {
     lvglInitFonts();   // before any label exists — see the note at gFont14
 #if ARDUINO_USB_CDC_ON_BOOT
     Serial.setTxTimeoutMs(0); // non-blocking: drop data if no host reading (avoids CDC lag)
-    // With TinyUSB (USBMode=default), Serial correctly reflects CDC connection state.
-    // Wait up to 4s for a host to open the port; then proceed regardless.
-    { uint32_t _t = millis(); while (!Serial && millis() - _t < 4000) delay(10); }
+    // No waiting for a serial monitor to attach. That wait lasted up to 4 s and
+    // only ever paid off on a bench with a terminal open -- every scale on a
+    // charger or in a customer's kitchen paid it in full, on a black screen,
+    // before the display was even started. A developer who needs the first
+    // lines opens the monitor before the reset, as `flash.sh --monitor` does.
 #endif
     Serial.println("[BOOT] setup() start");
     Serial.printf("[BOOT] custom build: %s\n", TIGERSCALE_CUSTOM_BUILD);
@@ -18655,7 +18751,7 @@ void setup() {
     }
 
     drawSplash();
-    delay(2000);
+    gSplashUntilMs = millis() + SPLASH_MIN_MS;
     bootProgress(5, "Starting...");
 
     // Re-arm the RC522 readers after the LCD/QSPI stack comes up.
@@ -18683,7 +18779,6 @@ void setup() {
     //   - else if email+password is present, fall back to firebaseSignIn()
     if (isFirebaseConfigured() && WiFi.isConnected()) {
         bootProgress(62, "Firebase...");
-        delay(400);
     }
 
     Serial.println("[BOOT] setupFileSystem()");
@@ -18720,8 +18815,24 @@ void setup() {
     gLastActivityMs = millis(); // start screensaver timer from boot completion
 
     Serial.println("[BOOT] setup() complete");
-    bootProgress(100, "Ready!");
-    delay(1200);
+    // The logo was promised its full two seconds. A boot that finished sooner
+    // waits out only what is left of them, having done its work meanwhile.
+    while ((int32_t)(gSplashUntilMs - millis()) > 0) delay(10);
+    // A progress screen that never appeared -- boot fitted under the logo -- is
+    // not created now just to say "Ready!" for an instant before the weigh
+    // screen replaces it. That used to be held for 1.2 s on purpose.
+    if (lvBootScreen) bootProgress(100, "Ready!");
+    // Build and load the weigh screen here, before loop() runs LVGL for the
+    // first time. That first lv_timer_handler() paints whatever screen is
+    // active, and with no progress screen to have replaced it -- boot now fits
+    // under the logo -- that was LVGL's default screen, which is near-white
+    // (0xF7BE on every sampled pixel). The panel showed it for about 400 ms
+    // between the logo and the weigh screen: the white flash, sweeping right
+    // to left because a full-canvas push lands in the panel's own row order.
+    displayWeightWithState(currentWeight, lastUID, currentOledState);
+    // The moment the weigh screen takes over. setup() complete is logged above
+    // this, before the wait for the logo, so it is not the same instant.
+    Serial.println("[BOOT] weigh screen");
     gBootComplete = true;
 }
 
@@ -18828,6 +18939,29 @@ void loop() {
         gWebServerStarting = true;
         Serial.println("[HTTP] Starting server from main loop");
         startWebServerNow();
+    }
+
+    // WiFi in the background -- see the note above setupWiFi(). Once there is a
+    // link: the clock, which boot used to start only on a connection it had
+    // waited for. Until there is one: another attempt every WIFI_RETRY_MS, with
+    // the credentials re-read so a network changed in Settings is the one used.
+    static bool sNtpStarted = false;
+    if (WiFi.isConnected()) {
+        if (!sNtpStarted) {
+            sNtpStarted = true;
+            configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+            Serial.println("[NTP] configTime set - waiting for sync...");
+        }
+    } else if (gWifiNextRetryMs && (int32_t)(millis() - gWifiNextRetryMs) >= 0) {
+        gWifiNextRetryMs = millis() + WIFI_RETRY_MS;
+        prefs.begin("ts-wifi", true);
+        String ssid = prefs.getString("ssid", "");
+        String pass = prefs.getString("pass", "");
+        prefs.end();
+        if (ssid.length()) {
+            Serial.printf("[WIFI] not connected - trying '%s' again\n", ssid.c_str());
+            wifiBeginBestAp(ssid.c_str(), pass.c_str());
+        }
     }
 
     // The boot deferrals are ceilings, not targets: they exist so a struggling

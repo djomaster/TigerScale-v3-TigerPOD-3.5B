@@ -3,6 +3,11 @@
 The short version of every release, newest first — one scroll, no jargon.
 The full story for each version lives in [docs/release-notes/](docs/release-notes/).
 
+## v3.14.0-pod.1.2.1 — official 3.14.0 base
+
+The scale starts in about three seconds, reconnects to the Wi-Fi by itself, and the keyboard matches your language.
+[Full notes](docs/release-notes/v3.14.0-pod.1.2.1.md)
+
 ## v3.13.0-pod.1.2.1 — TigerPOD frees old tags
 
 Tags of a spool you deleted in Studio can now be formatted and reused from the TigerPOD menu, and a Bambu Lab chip link can be removed.

@@ -1,6 +1,6 @@
 # TigerScale-V3-TigerPOD+
 
-> **TigerScale V3 v3.13.0 - POD v1.2.1.**
+> **TigerScale V3 v3.14.0 - POD v1.2.1.**
 > A custom firmware for the **Waveshare ESP32-S3-Touch-LCD-3.5B** with two PN532 readers in HSU mode.
 
 > [!IMPORTANT]
